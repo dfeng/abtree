@@ -1,0 +1,28 @@
+Package: abtree
+Type: Package
+Title: Subgroup-Based Treatment Assignment
+Version: 0.2
+Date: 2016-06-15
+Depends: rpart
+Authors@R: c(person("Xiaofei", "Wang", email = "swang@amherst.edu", role = c("aut")),
+             person("Derek", "Feng", email="derek.feng@yale.edu", role=c("aut", "cre")))
+Description: Given two possible treatments, there may exist subgroups who
+    benefit greater from one treatment than the other. This problem is relevant
+    to the field of marketing, where treatments may correspond to different
+    ways of selling a product. It is similarly relevant to the field of public
+    policy, where treatments may correspond to specific government programs. And
+    finally, personalized medicine is a field wholly devoted to understanding which
+    subgroups of individuals will benefit from particular medical treatments. We
+    present a computationally fast tree-based method, ABtree, for treatment effect
+    differentiation. Unlike other methods, ABtree is designed to produce decision
+    rules for optimal treatment assignment for individuals. The treatment choices
+    are selected on basis of maximizing the overall occurrence of a desired binary
+    outcome, conditional on a set of covariates. In this paper, we show that ABtree
+    performs well in simulation settings and produces intuitive results on a real
+    dataset.
+License: GPL (>= 2)
+LazyData: TRUE
+Imports:
+    Rcpp (>= 0.12.3)
+LinkingTo: Rcpp
+RoxygenNote: 5.0.1
