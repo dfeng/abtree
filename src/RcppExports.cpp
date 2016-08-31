@@ -6,8 +6,8 @@
 using namespace Rcpp;
 
 // rcpp_BuildTree
-List rcpp_BuildTree(NumericVector y, NumericMatrix x, IntegerVector trt, IntegerMatrix ordering, int ntrt, IntegerVector ncat, int min_bucket, int min_split, int max_depth);
-RcppExport SEXP abtree_rcpp_BuildTree(SEXP ySEXP, SEXP xSEXP, SEXP trtSEXP, SEXP orderingSEXP, SEXP ntrtSEXP, SEXP ncatSEXP, SEXP min_bucketSEXP, SEXP min_splitSEXP, SEXP max_depthSEXP) {
+List rcpp_BuildTree(NumericVector y, NumericMatrix x, IntegerVector trt, IntegerMatrix ordering, IntegerVector ncat, int min_bucket, int min_split, int max_depth);
+RcppExport SEXP abtree_rcpp_BuildTree(SEXP ySEXP, SEXP xSEXP, SEXP trtSEXP, SEXP orderingSEXP, SEXP ncatSEXP, SEXP min_bucketSEXP, SEXP min_splitSEXP, SEXP max_depthSEXP) {
 BEGIN_RCPP
     Rcpp::RObject __result;
     Rcpp::RNGScope __rngScope;
@@ -15,12 +15,11 @@ BEGIN_RCPP
     Rcpp::traits::input_parameter< NumericMatrix >::type x(xSEXP);
     Rcpp::traits::input_parameter< IntegerVector >::type trt(trtSEXP);
     Rcpp::traits::input_parameter< IntegerMatrix >::type ordering(orderingSEXP);
-    Rcpp::traits::input_parameter< int >::type ntrt(ntrtSEXP);
     Rcpp::traits::input_parameter< IntegerVector >::type ncat(ncatSEXP);
     Rcpp::traits::input_parameter< int >::type min_bucket(min_bucketSEXP);
     Rcpp::traits::input_parameter< int >::type min_split(min_splitSEXP);
     Rcpp::traits::input_parameter< int >::type max_depth(max_depthSEXP);
-    __result = Rcpp::wrap(rcpp_BuildTree(y, x, trt, ordering, ntrt, ncat, min_bucket, min_split, max_depth));
+    __result = Rcpp::wrap(rcpp_BuildTree(y, x, trt, ordering, ncat, min_bucket, min_split, max_depth));
     return __result;
 END_RCPP
 }

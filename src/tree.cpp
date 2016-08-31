@@ -17,10 +17,11 @@ using namespace Rcpp;
 // [[Rcpp::export]]
 List rcpp_BuildTree(NumericVector y, NumericMatrix x,
                     IntegerVector trt, IntegerMatrix ordering,
-                    int ntrt, IntegerVector ncat,
+                    IntegerVector ncat,
                     int min_bucket, int min_split, int max_depth) {
   int ncol = x.ncol();
   int nrow = x.nrow();
+  int ntrt = max(trt) + 1;
 
   // Initialize the root
   NumericVector root_y(ntrt);
