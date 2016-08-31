@@ -1,155 +1,131 @@
 #include <Rcpp.h>
-#include <vector>
 
-#include "node.h"
-#include "abtree.h"
+#include "vector.h" // shorthands for std::vector<type>
+#include "node.h" // custom data types
+#include "abtree.h" // master header file
 
 using namespace Rcpp;
+/*
+ *
+ * Idioms:
+ *  - use Rcpp data structures whenever the object will be in contact with R
+ *  - use natire cpp data structures o/w
+ * 
+ */
+
 
 // [[Rcpp::export]]
-List rcpp_BuildTree(std::vector<double> y, NumericMatrix x_temp,
-                    std::vector<int> trt, IntegerMatrix ordering_temp,
-                    std::vector<int> ncat, int min_bucket,
-                    int min_split, int max_depth) {
-  int ncol = ncat.size();
-  int nrow = y.size();
-
-  DoubleMat x;
-  IntMat ordering;
-  // TODO: better way of handling *Matrix
-  for (int j = 0; j < ncol; j++) {
-    IntVec o;
-    DoubleVec xx;
-    for (int i = 0; i < nrow; i++) {
-      o.push_back(ordering_temp(i,j));
-      xx.push_back(x_temp(i,j));
-    }
-    ordering.push_back(o);
-    x.push_back(xx);
-  }
-  // GetRNGstate();
+List rcpp_BuildTree(NumericVector y, NumericMatrix x,
+                    IntegerVector trt, IntegerMatrix ordering,
+                    int ntrt, IntegerVector ncat,
+                    int min_bucket, int min_split, int max_depth) {
+  int ncol = x.ncol();
+  int nrow = x.nrow();
 
   // Initialize the root
-  double y0 = 0.0, y1 = 0.0;
-  int n0 = 0, n1 = 0;
+  NumericVector root_y(ntrt);
+  IntegerVector root_n(ntrt);
   for (int i = 0; i < nrow; i++) {
-    if (trt[i] == 0) {
-      y0 += y[i];
-      n0++;
-    } else {
-      y1 += y[i];
-      n1++;
-    }
+    root_y[trt[i]] += y[i];
+    root_n[trt[i]] ++;
   }
-  Block b(y0, y1, n0, n1);
-  Node *root = new Node(b);
-  Partition(root, y, x, trt, ordering, ncat,
+  Block b(root_y, root_n);
+
+  // TODO: make sure that this is the right way of instantiating an object
+  // Node *root = new Node();
+  // root->blok = b;
+  Node root = Node();
+  root.blok = b;
+
+  // TODO: do we want to do the ordering matrix in cpp?
+  Partition(&root, y, x, trt, ordering,
+            ntrt, ncat,
             ncol, 0, nrow,
-            min_bucket, min_split, max_depth, 0);
+            min_bucket, min_split, max_depth,
+            0);
 
   // if no good splits were found even for the root
-  DoubleMat cp_table;
-  if (root->split_col != -1) {
-    cp_table = TreeComplexity(root);
-  }
-
-  // Prune
-  // Rprintf("%d\n", root->split_col);
-
-  // Rprintf("cp_size: %d", cp_table.size());
-  // PredictPrune(root, x, cp_table, ncol, nrow);
-
-  // // find maximum cp_value
-  // double argmax_cp;
-  // double max_profit = -DBL_MAX;
-  // for (int i = 0; i < cp_table.size(); i++) {
-  //   if (cp_table[i][2] > max_profit) {
-  //     max_profit = cp_table[i][2];
-  //     argmax_cp = cp_table[i][1];
-  //   }
+  // NumericMatrix cp_table;
+  // if (root->split_col != -1) {
+  //   cp_table = TreeComplexity(root);
   // }
-  // // Rprintf("cp arg max: %0.2f", argmax_cp);
-  // PruneTree(root, argmax_cp);
-  // Rprintf("did we get here?\n");
-
-  // PutRNGstate();
 
   DoubleMat tree_df;
-  ExportTree(root, tree_df);
+  ExportTree(&root, tree_df);
 
-  List z;
-  z["tree"] = wrap(tree_df);
-  z["cp.table"] = wrap(cp_table);
-  return z;
+  List ret;
+  ret["tree"] = wrap(tree_df);
+  // ret["cp.table"] = wrap(cp_table);
+  return ret;
 }
 
-// [[Rcpp::export]]
-List rcpp_Prune(NumericMatrix tree_df, std::vector<double> y,
-                NumericMatrix x_temp, std::vector<int> trt,
-                std::vector<int> ncat,
-                NumericMatrix cp_tbl) {
-  Node * root = ImportTree(tree_df);
-  DoubleMat cp_table = NumToDoubleMat(cp_tbl);
+// // [[Rcpp::export]]
+// List rcpp_Prune(NumericMatrix tree_df, std::vector<double> y,
+//                 NumericMatrix x_temp, std::vector<int> trt,
+//                 std::vector<int> ncat,
+//                 NumericMatrix cp_tbl) {
+//   Node * root = ImportTree(tree_df);
+//   DoubleMat cp_table = NumToDoubleMat(cp_tbl);
 
-  DoubleMat valid;
-  for (int j = 0; j < x_temp.ncol(); j++) {
-    DoubleVec xx;
-    for (int i = 0; i < x_temp.nrow(); i++) {
-      xx.push_back(x_temp(i,j));
-    }
-    valid.push_back(xx);
-  }
+//   DoubleMat valid;
+//   for (int j = 0; j < x_temp.ncol(); j++) {
+//     DoubleVec xx;
+//     for (int i = 0; i < x_temp.nrow(); i++) {
+//       xx.push_back(x_temp(i,j));
+//     }
+//     valid.push_back(xx);
+//   }
 
-  PredictPrune(root, y, valid, trt, ncat, cp_table);
+//   PredictPrune(root, y, valid, trt, ncat, cp_table);
 
-  // find maximum cp_value
-  double argmax_cp;
-  double max_profit = -DBL_MAX;
-  for (int i = 0; i < cp_table.size(); i++) {
-    if (cp_table[i][1] >= max_profit) {
-      max_profit = cp_table[i][1];
-      argmax_cp = cp_table[i][0];
-    }
-  }
-  // Rprintf("argmax_cp %0.5f\n", argmax_cp);
-  // Rprintf("max_profit %0.5f\n", max_profit);
-  PruneTree(root, argmax_cp);
+//   // find maximum cp_value
+//   double argmax_cp;
+//   double max_profit = -DBL_MAX;
+//   for (int i = 0; i < cp_table.size(); i++) {
+//     if (cp_table[i][1] >= max_profit) {
+//       max_profit = cp_table[i][1];
+//       argmax_cp = cp_table[i][0];
+//     }
+//   }
+//   // Rprintf("argmax_cp %0.5f\n", argmax_cp);
+//   // Rprintf("max_profit %0.5f\n", max_profit);
+//   PruneTree(root, argmax_cp);
 
-  DoubleMat new_tree_df;
-  ExportTree(root, new_tree_df);
-  // return wrap(new_tree_df);
-  List z;
-  z["tree"] = wrap(new_tree_df);
-  z["cp.table"] = wrap(cp_table);
-  return z;
-}
+//   DoubleMat new_tree_df;
+//   ExportTree(root, new_tree_df);
+//   // return wrap(new_tree_df);
+//   List z;
+//   z["tree"] = wrap(new_tree_df);
+//   z["cp.table"] = wrap(cp_table);
+//   return z;
+// }
 
-// [[Rcpp::export]]
-List rcpp_Predict(NumericMatrix tree, std::vector<double> y,
-                  NumericMatrix x, std::vector<int> trt,
-                  std::vector<int> ncat) {
-  Node * root = ImportTree(tree);
+// // [[Rcpp::export]]
+// List rcpp_Predict(NumericMatrix tree, std::vector<double> y,
+//                   NumericMatrix x, std::vector<int> trt,
+//                   std::vector<int> ncat) {
+//   Node * root = ImportTree(tree);
 
-  IntegerVector pred_trt = Predict(root, y, x, trt, ncat);
+//   IntegerVector pred_trt = Predict(root, y, x, trt, ncat);
 
-  DoubleMat testtree_df;
-  ExportTree(root, testtree_df, TRUE);
+//   DoubleMat testtree_df;
+//   ExportTree(root, testtree_df, TRUE);
 
-  List z;
-  z["test"] = wrap(testtree_df);
-  z["trt"] = wrap(pred_trt);
-  return z;
-}
+//   List z;
+//   z["test"] = wrap(testtree_df);
+//   z["trt"] = wrap(pred_trt);
+//   return z;
+// }
 
-// NumericMatrix to DoubleMat
-DoubleMat NumToDoubleMat(NumericMatrix m) {
-  DoubleMat out;
-  for (int i = 0; i < m.nrow(); i++) {
-    DoubleVec o_row;
-    for (int j = 0; j < m.ncol(); j++) {
-      o_row.push_back(m(i,j));
-    }
-    out.push_back(o_row);
-  }
-  return out;
-}
+// // NumericMatrix to DoubleMat
+// DoubleMat NumToDoubleMat(NumericMatrix m) {
+//   DoubleMat out;
+//   for (int i = 0; i < m.nrow(); i++) {
+//     DoubleVec o_row;
+//     for (int j = 0; j < m.ncol(); j++) {
+//       o_row.push_back(m(i,j));
+//     }
+//     out.push_back(o_row);
+//   }
+//   return out;
+// }

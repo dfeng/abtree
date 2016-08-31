@@ -1,6 +1,6 @@
 #include <Rcpp.h>
-#include <vector>
 
+#include "vector.h"
 #include "node.h"
 #include "abtree.h"
 
@@ -9,8 +9,6 @@
 * @param splitnode pointer to the node that we wish to split
 *
 * @return ?
-*
-* @comment should follow the same form as our BuildTree() function
 *
 * @pseudo
 *   for columns of X
@@ -23,8 +21,9 @@
 *
 */
 void Partition(Node *splitnode,
-               const DoubleVec &y, const DoubleMat &x, const IntVec &trt,
-               IntMat &ordering, const IntVec &ncat,
+               const NumericVector &y, const NumericMatrix &x,
+               const IntegerVector &trt, IntegerMatrix &ordering,
+               int ntrt, const IntegerVector &ncat,
                int ncol, int start, int end,
                int min_bucket, int min_split, int max_depth,
                int level) {
@@ -32,18 +31,12 @@ void Partition(Node *splitnode,
   int split_first, split_last; // first and last for categorical
   int split_type; // optimal split type (ncat)
   // double opt_Q = -DBL_MAX;
-  double opt_Q = splitnode->blok.opt_Q; // Do better than parents!! Chinese Motto
+  double opt_Q = splitnode->blok.opt_Q; // Do better than parents!! aka Chinese Motto
   Block opt_left, opt_right;
   double split_tau;
 
-  // id for node
-//   splitnode->id = id;
-//   id++;
-
-  // calculate current profit and best treatment (actually, we did that already)
   // Rprintf("start/end %d %d\n", start, end);
 
-  // TODO: Levels?
   if (level == max_depth)
     return;
 
@@ -55,16 +48,12 @@ void Partition(Node *splitnode,
     Block current_left, current_right;
     // Rprintf("split on col %d\n", i);
     if (ncat[i] == 0) {
-      if (!BestSplitNum(y, x[i], trt, ordering[i],
+      if (!BestSplitNum(y, x(i,_), trt, ordering(i,_), ntrt,
                         start, end, min_bucket,
                         current_left, current_right,
                         current_tau, current_split_n))
         continue;
     } else { // ncat[i] > 0 <==> categorical
-      if (!BestSplitCat(y, x[i], trt, ordering[i],
-                        ncat[i], start, end, min_bucket,
-                        current_left, current_right,
-                        current_tau, current_split_first, current_split_last))
         continue;
     }
 
@@ -101,16 +90,16 @@ void Partition(Node *splitnode,
   if (split_type > 0) {
     int tempvec[end - start];
     for (int i=0; i < split_last - split_first; i++) {
-      tempvec[i] = ordering[split_col][split_first + i];
+      tempvec[i] = ordering(split_col, split_first + i);
     }
     for (int i=0; i < split_first - start; i++) {
-      tempvec[split_last - split_first + i] = ordering[split_col][start + i];
+      tempvec[split_last - split_first + i] = ordering(split_col,start + i);
     }
     for (int i=0; i < end - split_last; i++) {
-      tempvec[split_last - start + i] = ordering[split_col][split_last + i];
+      tempvec[split_last - start + i] = ordering(split_col,split_last + i);
     }
     for (int i=0; i < end - start; i++) {
-      ordering[split_col][start + i] = tempvec[i];
+      ordering(split_col,start + i) = tempvec[i];
     }
     split_n = start + split_last - split_first;
   }
@@ -131,143 +120,52 @@ void Partition(Node *splitnode,
   // splitnode->split_n = split_n;
 
   // initializing left, right branches
-  splitnode->left = new Node(opt_left);
+  splitnode->left = new Node();
+  splitnode->left->blok = opt_left;
   // Rprintf("left: opt_Q %0.2f opt_trt %d\n", opt_left.opt_Q, opt_left.opt_trt);
-  splitnode->right = new Node(opt_right);
+  splitnode->right = new Node();
+  splitnode->right->blok = opt_right;
   // Rprintf("right: opt_Q %0.2f opt_trt %d\n", opt_right.opt_Q, opt_right.opt_trt);
 
   // Rprintf("recurse!\n");
   // now recurse!
   // if (opt_left.total_n > min_split)
-  Partition(splitnode->left, y, x, trt, ordering, ncat, ncol, start, split_n, min_bucket, min_split, max_depth, level+1);
+  Partition(splitnode->left, y, x, trt, ordering, ntrt, ncat, ncol, start, split_n, min_bucket, min_split, max_depth, level+1);
   // if (opt_right.total_n > min_split)
-  Partition(splitnode->right, y, x, trt, ordering, ncat, ncol, split_n, end, min_bucket, min_split, max_depth, level+1);
+  Partition(splitnode->right, y, x, trt, ordering, ntrt, ncat, ncol, split_n, end, min_bucket, min_split, max_depth, level+1);
 }
 
-bool BestSplitCat(const DoubleVec &y, const DoubleVec &x, const IntVec &trt,
-                  const IntVec &ordering, int K, // ncat[i]
-                  int start, int end, int min_bucket,
+bool BestSplitNum(const NumericVector &y, const NumericVector &x,
+                  const IntegerVector &trt, const IntegerVector &ordering,
+                  int ntrt, int start, int end, int min_bucket,
                   Block &opt_left, Block &opt_right,
-                  double &split_tau, int &split_left, int &split_right) {
-  // if I recall correctly, categorical variables are simply converted
-  // into integers... which are probably stored as doubles here.
-  // we will keep track of counts of each treatment
-  // and response for each treatment per category
-  int ncat[K][2]; // K by 2
-  double ycat[K][2]; // K by 2
-
-  // calculate category values for use later
-  int ntot[2] = {0, 0};
-  double ytot[2] = {0.0, 0.0};
-
-  for (int k = 0; k < K; k++) {
-    ncat[k][0] = 0;
-    ncat[k][1] = 0;
-    ycat[k][0] = 0.0;
-    ycat[k][1] = 0.0;
-  }
-  int cur_cat = -1;
-  double cat_dbl = -1.0;
-  for (int i=start; i < end; i++) {
-    int o = ordering[i];
-    if (x[o] != cat_dbl) { // new category
-      cat_dbl = x[o];
-      cur_cat = (int) cat_dbl;
-    }
-    ncat[cur_cat][trt[o]]++;
-    ycat[cur_cat][trt[o]] += y[o];
-    ntot[trt[o]]++;
-    ytot[trt[o]] += y[o];
-  }
-
-  // for (int i = 0; i < K; i++) {
-  //   Rprintf("currCat:%d, catA: (n %d, y %0.2f), catB: (n %d, y %0.2f)\n", i,
-  //           ncat[i][0], ycat[i][0], ncat[i][1], ycat[i][1]);
-  // }
-  // start looping through the data (ahem, the categories)
-
-  double opt_Q = -DBL_MAX;
-  // possible splits are 0, 1, ..., K-1
-  int left = start;
-  for (int i = 0; i < K; i++) {
-    // Rprintf("i:%d o:%d prevX:%0.2f  currX:%0.2f, ncum:%d %d\n", i, o, prevX, x[o], ncum[n][0], ncum[n][1]);
-    // check that we have at least the right minimum number of observations
-    if (ncat[i][0] > min_bucket & ncat[i][1] > min_bucket &
-        ((ntot[0]-ncat[i][0]) > min_bucket) &
-        ((ntot[1]-ncat[i][1]) >  min_bucket)) {
-      // Rprintf("n:%d left: (A %d,B %d), right: (A %d,B %d)\n", i,
-      //         ncat[i][0],
-      //         ncat[i][1],
-      //         (ntot[0]-ncat[i][0]),
-      //         (ntot[1]-ncat[i][1])
-      //       );
-      // Rprintf("y:%d left: (A %0.2f,B %0.2f), right: (A %0.2f,B %0.2f)\n", i,
-      //         ycat[i][0],
-      //         ycat[i][1],
-      //         (ytot[0]-ycat[i][0]),
-      //         (ytot[1]-ycat[i][1])
-      //       );
-
-      // for convenience, left is the category being split on and
-      // throw everyone else into right branch)
-      Block b_left(ycat[i][0], ycat[i][1],
-                              ncat[i][0], ncat[i][1]);
-      Block b_right(ytot[0]-ycat[i][0],
-                               ytot[1]-ycat[i][1],
-                               ntot[0]-ncat[i][0],
-                               ntot[1]-ncat[i][1]);
-
-      // Rprintf("cat:%d left: %0.2f right: %0.2f \n", i, b_left.opt_Q, b_right.opt_Q);
-
-      if (b_left.opt_Q + b_right.opt_Q > opt_Q) {
-        // Rprintf("good?\n");
-        opt_Q = b_left.opt_Q + b_right.opt_Q;
-        opt_left = b_left;
-        opt_right = b_right;
-        split_tau = (double) i;
-        split_left = left;
-        split_right = left+ncat[i][0]+ncat[i][1];
-        // Rprintf("tau: %0.2f split_n %d i %d start:%d\n", split_tau, split_n, i, start);
-      }
-    }
-    left += ncat[i][0]+ncat[i][1];
-  }
-
-  // if we didn't make any splits, return false
-  return (opt_Q != -DBL_MAX);
-}
-
-bool BestSplitNum(const DoubleVec &y, const DoubleVec &x,
-               const IntVec &trt, const IntVec &ordering,
-               int start, int end, int min_bucket,
-               Block &opt_left, Block &opt_right,
-               double &split_tau, int &split_n) {
+                  double &split_tau, int &split_n) {
   const int len = end - start;
 
   // we will use ncum to keep track of counts of each treatment
   // and response for each treatment as we proceed through the data
-  int ncum[len][2];
-  double ycum[len][2];
+  IntegerMatrix ncum(len, ntrt);
+  NumericMatrix ycum(len, ntrt);
 
   // initialize (like defaultdict in python)
-  for (int j = 0; j < 2; j++) {
-    ncum[0][j] = 0;
-    ycum[0][j] = 0.0;
+  for (int j = 0; j < ntrt; j++) {
+    ncum(0,j) = 0;
+    ycum(0,j) = 0.0;
   }
 
   // calculate cumulative sums for use later
   for (int i=start; i < end; i++) {
     const int o = ordering[i];
     if (i == start) {
-      ncum[0][trt[o]]++;
-      ycum[0][trt[o]] = y[o];
+      ncum(0,trt[o])++;
+      ycum(0,trt[o]) = y[o];
     } else {
-      for (int j = 0; j < 2; j++) {
-        ncum[i-start][j] = ncum[i-start-1][j];
-        ycum[i-start][j] = ycum[i-start-1][j];
+      for (int j = 0; j < ntrt; j++) {
+        ncum(i-start,j) = ncum(i-start-1,j);
+        ycum(i-start,j) = ycum(i-start-1,j);
       }
-      ncum[i-start][trt[o]]++;
-      ycum[i-start][trt[o]] += y[o];
+      ncum(i-start,trt[o])++;
+      ycum(i-start,trt[o]) += y[o];
     }
   }
 
@@ -284,17 +182,16 @@ bool BestSplitNum(const DoubleVec &y, const DoubleVec &x,
     // check if current x is different, in which case we have passed enough
     // data to consider a split
     if (x[o] > prevX) {
-      if (ncum[n-1][0] > min_bucket & ncum[n-1][1] > min_bucket &
-            (ncum[len-1][0]-ncum[n-1][0] > min_bucket) &
-            (ncum[len-1][1]-ncum[n-1][1]) > min_bucket) {
+      bool bucket_pass = false;
+      for (int j = 0; j < ntrt; j++) {
+        if ((ncum(n-1,j) > min_bucket) & (ncum(len-1,j)-ncum(n-1,j) > min_bucket))
+          bucket_pass = true;
+      }
+      if (bucket_pass) {
         // now evaluate the split at prevX
-
-        Block b_left(ycum[n-1][0], ycum[n-1][1],
-                                ncum[n-1][0], ncum[n-1][1]);
-        Block b_right(ycum[len-1][0]-ycum[n-1][0],
-                                 ycum[len-1][1]-ycum[n-1][1],
-                                 ncum[len-1][0]-ncum[n-1][0],
-                                 ncum[len-1][1]-ncum[n-1][1]);
+        Block b_left((NumericVector) ycum(n-1,_), (IntegerVector) ncum(n-1,_));
+        Block b_right((NumericVector) ycum(len-1,_)-ycum(n-1,_),
+                      (IntegerVector) ncum(len-1,_)-ncum(n-1,_));
 
         if (b_left.opt_Q + b_right.opt_Q > opt_Q) {
           opt_Q = b_left.opt_Q + b_right.opt_Q;

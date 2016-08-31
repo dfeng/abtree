@@ -1,4 +1,9 @@
+.DS_store
 .httr-oauth
 .Rproj.user/*
 man/*
 .Rapp.history
+*.o
+*.sublime-workspace
+*.sublime-project
+.Rproj.user

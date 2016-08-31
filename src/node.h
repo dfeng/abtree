@@ -1,62 +1,69 @@
-#ifndef TREE_H
-#define TREE_H
+#ifndef NODE_H
+#define NODE_H
 
 /*
- * A block contains y0, y1, n0, n1
- *
- * There should be a way to compare blocks based on the opt_Q
- *
+  Data Structure defining blocks and nodes of the tree
+ */
+
+// do i need to include vector.h?
+#include "vector.h"
+#include <Rcpp.h>
+using namespace Rcpp;
+
+/*
+  Blocks of data that correspond to splits in the decision tree
  */
 struct Block {
-  double y[2];
-  int n[2];
-  double p[2]; // probability of success
+  NumericVector y; // response / trt
+  IntegerVector n; // count / trt
+
+  // inferred values
+  NumericVector p; // average response / trt
   int total_n;
+
   // optimal
   int opt_trt;
   double opt_Q;
   double opt_prob;
 
   // Constructors
-  Block() {
-    y[0] = -1.0;
-    y[1] = -1.0;
-    n[0] = -1;
-    n[1] = -1;
-    p[0] = -1.0;
-    p[1] = -1.0;
-  }
-  Block(double y0, double y1, int n0, int n1, bool max=FALSE) {
-    y[0] = y0;
-    y[1] = y1;
-    n[0] = n0;
-    n[1] = n1;
-    p[0] = y0 / n0;
-    p[1] = y1 / n1;
-    total_n = n0 + n1;
-    // if (y1 > y0) {
-    if (p[1] > p[0]) {
-      opt_trt = 1;
-      if (max)
-        opt_Q = p[1] * total_n;
-      opt_prob = p[1];
-    } else {
-      opt_trt = 0;
-      if (max)
-        opt_Q = p[0] * total_n;
-      opt_prob = p[0];
+  Block() {}; // default constructor, never used
+  Block(NumericVector y0, IntegerVector n0)  {
+  // assigning to block struct
+  y = y0; n = n0;
+  int ntrt = y0.size();
+  NumericVector p(ntrt);
+  total_n = 0;
+  
+  // calculating p
+  opt_prob = -1.0;
+  double tot_prob = 0.0;
+  for (int i = 0; i < ntrt; i++) {
+    p[i] = y[i] / n[i];
+    tot_prob += p[i];
+    total_n += n[i];
+    if (p[i] > opt_prob) {
+      opt_prob = p[i];
+      opt_trt = i;
     }
-    if (!max)
-      opt_Q = (p[0] - p[1])*(p[0] - p[1])*total_n;
+  }
+  // TODO: loss types
+  // calculate optimal Q
+  switch(1) {
+    // regret/L1
+    case 0: opt_Q = total_n * sum(opt_prob - p);
+            break;
+    // LS/L2
+    case 1: opt_Q = total_n * sum(pow(opt_prob - p, 2));
+            break;
   }
 };
+};
 
-
-// we use pointers here because pointers can point to NULL, which means we don't actually need
-// a flag of whether or not it's a leaf, though for pruning purposes it might be helpful
+/*
+  Node of a decision tree
+ */
 struct Node {
-  //int id; // I succumbed – we need an id for each node, to make it easy to reference it later
-            // SW: No we don't.
   // Split Information
   int split_col; // column index of X matrix to split on
   // int split_n; // the index to split on
@@ -95,47 +102,9 @@ struct Node {
     this->complexity = -1;
     this->split_col = -1;
     this->opt_Q = -1.0;
-    this->prune_y[0] = 0.0;
-    this->prune_y[1] = 0.0;
-    this->prune_n[0] = 0;
-    this->prune_n[1] = 0;
-    this->predict_y[0] = 0.0;
-    this->predict_y[1] = 0.0;
-    this->predict_n[0] = 0;
-    this->predict_n[1] = 0;
-    Block b;
-    this->blok = b;
-    Block t_b;
-    this->test_blok = t_b;
-  }
-  // there was a * here
-  // but now it's gone
-  // and yet
-  // nothing has changed
-  // why, c++
-  // why?
-  Node(Block b) {
-    this->left = nullptr;
-    this->right = nullptr;
-    this->pruned = false;
-    this->branch = -1;
-    this->complexity = -1;
-    this->blok = b; // adding the block
-    this->split_col = -1;
-    this->opt_Q = -1.0;
-    this->prune_y[0] = 0.0;
-    this->prune_y[1] = 0.0;
-    this->prune_n[0] = 0;
-    this->prune_n[1] = 0;
-    this->predict_y[0] = 0.0;
-    this->predict_y[1] = 0.0;
-    this->predict_n[0] = 0;
-    this->predict_n[1] = 0;
-    Block t_b;
-    this->test_blok = t_b;
-  }
+  };
+  // Node(Block b);
 
-public:
   void print();
 };
 
