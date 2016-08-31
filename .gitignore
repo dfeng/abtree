@@ -4,6 +4,7 @@
 man/*
 .Rapp.history
 *.o
+*.so
 *.sublime-workspace
 *.sublime-project
 .Rproj.user
