@@ -1,6 +1,26 @@
 # =================  #
 # ===  Helpers  ===  #
 # =================  #
+ParseFormula <- function(formula, data) {
+  rhs <- formula[[3]] # grp | hour + browser
+  response <- formula[[2]] # y
+  treat <- rhs[[2]] # grp
+  covariates <- rhs[[3]] # hour + browser
+
+  if (deparse(response) %in% colnames(data))
+    y <- eval(response, data)
+  else
+    stop("Response variable not found in data.")
+  if (deparse(treat) %in% colnames(data))
+    trt <- eval(treat, data)
+  else
+    stop("Treatment variable not found in data.")
+
+  cov.names <- all.vars(covariates) # c("hour", "browser")
+  # TODO: proper try/catch error handling in case covariate note in data.
+  x <- as.data.frame(data[,cov.names], stringsAsFactors=FALSE)
+  list(y=y,x=x,trt=trt)
+}
 
 FormatTree <- function(object, child_id=FALSE, digits=3, scientific=FALSE) {
   tree <- rbind(matrix(unlist(object$tree), ncol=14, byrow=T))
@@ -39,32 +59,6 @@ FormatTree <- function(object, child_id=FALSE, digits=3, scientific=FALSE) {
   return(tree)
 
 }
-ParseFormula <- function(formula, data) {
-  rhs <- formula[[3]]
-  lhs <- formula[[2]]
-  condition <- rhs[[2]]
-  rhs <- rhs[[3]]
-  out <- list()
-  if (deparse(lhs) %in% colnames(data)) {
-    y <- eval(lhs, data)
-    # names(y) <- deparse(lhs)
-    out[["y"]] <- y
-  }
-  if (deparse(condition) %in% colnames(data)) {
-    trt <- eval(condition, data)
-    # names(trt) <- deparse(condition)
-    out[["trt"]] <- trt
-  }
-  rhs <- all.names(rhs)
-  rhs <- rhs[rhs != "+"]
-  x <- as.data.frame(data[,rhs], stringsAsFactors=FALSE)
-  out[["x"]] <- x
-  # return(list(y=y,x=x,trt=trt))
-  return(out)
-}
-
-# convert treatment to 0,1 (A,B)
-TreatToAB <- function(x, AB) { ifelse(x==AB[2], 1, 0) }
 
 SplitData <- function(data, order, splitpos) {
   if (is.data.frame(data)) {
@@ -79,20 +73,4 @@ SplitData <- function(data, order, splitpos) {
     test <- data[(splitpos+1):l]
   }
   return(list(train=train, test=test))
-}
-
-# input: a variable
-# output: integer vector of length 2
-#         type: integer (0: quantitative, 1: nominal, 2: ordinal)
-#         ncat: number of nominal categories; 0 for quantitative/ordinal vars
-GetVarType <- function(y) {
-  type <- 0
-  ncat <- 0
-  if ("ordered" %in% class(y)) {
-    type <- 2
-  } else if("factor" %in% class(y)) {
-    type <- 1
-    ncat <- length(levels(y))
-  }
-  return(c(type=type, ncat=ncat))
 }

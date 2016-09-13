@@ -27,6 +27,7 @@ void Partition(Node *splitnode,
                int ncol, int start, int end,
                int min_bucket, int min_split, int max_depth,
                int level) {
+  Rprintf("Entering Partition\n");
   int split_col, split_n;
   int split_first, split_last; // first and last for categorical
   int split_type; // optimal split type (ncat)

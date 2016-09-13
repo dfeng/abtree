@@ -1,4 +1,4 @@
-#' MakeTree
+#' abtree
 #'
 #' @param formula an expression in the form of y ~ trt | cov1 + cov2 + ...
 #' @param data the data frame where the variables reside
@@ -11,54 +11,47 @@
 #'
 #' @examples
 #' \dontrun{
-#' tree <- MakeTree(y ~ grp | hour + browser, data=x)
+#' tree <- abtree(y ~ grp | hour + browser, data=x)
 #' }
-MakeTree <- function(formula, data, min.bucket=10, min.split=30,
+abtree <- function(formula, data, min.bucket=10, min.split=30,
                      max.depth=5) {
-  data <- ParseFormula(formula, data)
-  AB <- sort(unique(data$trt)) # temporary
-  data$trt <- TreatToAB(data$trt, AB)
-  # print(head(data$trt))
+  m <- ParseFormula(formula, data)
+  x.types <- vapply(m$x, class, character(1))
 
-  # coerce character types to factors
-  types <- sapply(data$x, class)
-  if (any(types == "character"))
-    stop("Error: At least one predictor is of type 'character'. Please convert to factor.")
+  # ========================  Conditions  ========================  # 
+  if (any(x.types == "character"))
+    stop("At least one predictor is of type 'character'. Please convert to factor.")
+  if (class(m$trt) == "character")
+    stop("The treatment variable should be of type 'factor'.")
+  if (class(m$y) == "character")
+    stop("The response variable cannot be of type 'character'. Please convert to factor.")
 
-  # todo: What if a level doesn't exist in the new data?
-  # todo: Or worse... if the levels are ordered differently?
-  # figure out class of each covariate
-  # and temporarily convert ordinals to numerics
-  x <- data.matrix(data$x)
-  var.types <- sapply(data$x, GetVarType)
-  for (j in which(var.types[1,]>=1)) {
-    x[,j] <- as.numeric(x[,j]-1)
-  }
+  ncat <- sapply(m$x, function(t) length(levels(t)))
+  y <- as.numeric(m$y)
+  x <- data.matrix(m$x)
+  trt <- as.numeric(m$trt)
 
-  # figure out ordering
   ord <- apply(x, 2, order)-1
-  # split the data into train, test
-  # data <- lapply(data, SplitData, sample(length(data$trt)), floor(length(data$trt)*7/10))
-  # init a tree
-  #tree <- Node$new("root")
-  #BuildTree(tree,  AB, min.bucket, min.split)
-  out <- rcpp_BuildTree(data$y, x, data$trt, ord,
-                        as.integer(var.types[2,]),
-                        as.integer(min.bucket), as.integer(min.split),
+  out <- rcpp_BuildTree(m$y, x, trt, ord,
+                        ncat,
+                        as.integer(min.bucket),
+                        as.integer(min.split),
                         as.integer(max.depth))
-  class(out) <- "abtree"
-  out$treatments <- AB
-  split_vars <- colnames(data$x)[unique(sapply(out$tree, function(x) ifelse(x[12]!=-1, x[2], NA))+1)]
-  split_vars <- split_vars[!is.na(split_vars)]
-  out$cat_levels <- list()
 
-  for (s in split_vars) {
-    if (var.types[1,s] >= 1)  {
-      out$cat_levels[[s]] <- levels(data$x[,s])
-    }
-  }
-  out$formula <- formula
-  out$var.types <- var.types
+  class(out) <- "abtree"
+  out$treatments <- levels(m$trt)
+
+  # split_vars <- colnames(data$x)[unique(sapply(out$tree, function(x) ifelse(x[12]!=-1, x[2], NA))+1)]
+  # split_vars <- split_vars[!is.na(split_vars)]
+  # out$cat_levels <- list()
+
+  # for (s in split_vars) {
+  #   if (var.types[1,s] >= 1)  {
+  #     out$cat_levels[[s]] <- levels(data$x[,s])
+  #   }
+  # }
+  # out$formula <- formula
+  # out$var.types <- var.types
   # out$trt <- colnames(data$trt)
   return(out)
 }
