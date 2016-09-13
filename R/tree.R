@@ -28,11 +28,11 @@ abtree <- function(formula, data, min.bucket=10, min.split=30,
 
   ncat <- sapply(m$x, function(t) length(levels(t)))
   y <- as.numeric(m$y)
-  x <- data.matrix(m$x)
-  trt <- as.numeric(m$trt)
+  x <- data.matrix(m$x) # converts everything to numeric, which is what we want since the Rcpp code will take a NumericMatrix
+  trt <- as.integer(m$trt)
 
   ord <- apply(x, 2, order)-1
-  out <- rcpp_BuildTree(m$y, x, trt, ord,
+  out <- rcpp_BuildTree(y, x, trt, ord,
                         ncat,
                         as.integer(min.bucket),
                         as.integer(min.split),

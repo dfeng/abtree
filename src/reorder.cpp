@@ -46,10 +46,10 @@ void Reorder(int split_col, int ncol,
       for (int k=start; k < split_n; k++) {
         // do we have a match
         // Rprintf("Reorder: match row %d with value %d\n", k, ordering[split_col][k]);
-        if (ordering(j,i) == ordering(split_col,k)) {
+        if (ordering(i,j) == ordering(k,split_col)) {
           // Rprintf("Reorder: a match! %d\n", ordering[split_col][k]);
           // if so, then that means this guy is in the left group
-          tempvec[leftpos] = ordering(j,i);
+          tempvec[leftpos] = ordering(i,j);
           leftpos++;
           wentright = false;
           break;
@@ -57,7 +57,7 @@ void Reorder(int split_col, int ncol,
       }
       // if we didn't put them in the left group
       if (wentright) {
-        tempvec[rightpos] = ordering(j,i);
+        tempvec[rightpos] = ordering(i,j);
         rightpos++;
       }
     }
@@ -66,7 +66,7 @@ void Reorder(int split_col, int ncol,
 
     // replace column j with tempvec
     for (int i = start; i < end; i++) {
-      ordering(j,i) = tempvec[i-start]; // originally was doing [i]
+      ordering(i,j) = tempvec[i-start]; // originally was doing [i]
     }
   }
 }

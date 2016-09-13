@@ -28,28 +28,30 @@ void Partition(Node *splitnode,
                int min_bucket, int min_split, int max_depth,
                int level) {
   Rprintf("Entering Partition\n");
+  Rprintf("Testing ordering: ord[1,1] = %d\n", ordering(0,0));
   int split_col, split_n;
   int split_first, split_last; // first and last for categorical
   int split_type; // optimal split type (ncat)
-  // double opt_Q = -DBL_MAX;
+
   double opt_Q = splitnode->blok.opt_Q; // Do better than parents!! aka Chinese Motto
   Block opt_left, opt_right;
   double split_tau;
 
-  // Rprintf("start/end %d %d\n", start, end);
+  Rprintf("start/end %d %d\n", start, end);
 
   if (level == max_depth)
     return;
 
   // looping over the columns
   for (int i = 0; i < ncol; i++) {
+    Rprintf("i: %d\n", i);
     double current_tau;
     int current_split_n = -1;
     int current_split_first = -1, current_split_last = -1;
     Block current_left, current_right;
-    // Rprintf("split on col %d\n", i);
+    Rprintf("split on col %d\n", i);
     if (ncat[i] == 0) {
-      if (!BestSplitNum(y, x(i,_), trt, ordering(i,_), ntrt,
+      if (!BestSplitNum(y, x(_,i), trt, ordering(_,i), ntrt,
                         start, end, min_bucket,
                         current_left, current_right,
                         current_tau, current_split_n))
@@ -141,8 +143,10 @@ bool BestSplitNum(const NumericVector &y, const NumericVector &x,
                   int ntrt, int start, int end, int min_bucket,
                   Block &opt_left, Block &opt_right,
                   double &split_tau, int &split_n) {
+  Rprintf("Start Numeric Best Split\n");
   const int len = end - start;
 
+  Rprintf("len/ntrt: %d, %d\n", len, ntrt);
   // we will use ncum to keep track of counts of each treatment
   // and response for each treatment as we proceed through the data
   IntegerMatrix ncum(len, ntrt);
@@ -154,6 +158,7 @@ bool BestSplitNum(const NumericVector &y, const NumericVector &x,
     ycum(0,j) = 0.0;
   }
 
+  Rprintf("Calculating Cumulative Sums\n");
   // calculate cumulative sums for use later
   for (int i=start; i < end; i++) {
     const int o = ordering[i];
@@ -171,7 +176,7 @@ bool BestSplitNum(const NumericVector &y, const NumericVector &x,
   }
 
   // start looping through the data
-
+  Rprintf("Start Loop\n");
   double opt_Q = -DBL_MAX;
   int n = 0; // convenient to keep track of n thus far, same as i-start+1
   double prevX = x[ordering[start]];
