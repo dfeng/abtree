@@ -202,7 +202,6 @@ bool BestSplitNum(const NumericVector &y, const NumericVector &x,
       }
       
       if (flags_pass) {
-        Rprintf("bucket pass\n");
         // now evaluate the split at prevX
         Block b_left((NumericVector) ycum(n-1,_),
                      (IntegerVector) ncum(n-1,_));
@@ -280,13 +279,21 @@ bool BestSplitCat(const NumericVector &y, const NumericVector &x,
   for (int i = 0; i < K; i++) {
     // Rprintf("i:%d o:%d prevX:%0.2f  currX:%0.2f, ncum:%d %d\n", i, o, prevX, x[o], ncum[n][0], ncum[n][1]);
     // check that we have at least the right minimum number of observations
-    bool bucket_pass = true;
+    bool flags_pass = true;
+    // bucket test
     for (int j = 0; j < ntrt; j++) {
-      if ((ncat(i,j) < min_bucket) || (ntot(j)-ncat(i,j) < min_bucket))
-        bucket_pass = false;
+      if ((ncat(i,j) < min_bucket) ||
+          (ntot(j)-ncat(i,j) < min_bucket)) {
+        flags_pass = false;
+        continue;
+      }
     }
-    if (bucket_pass) {
-
+    // split test
+    if ((sum(ncat(i,_)) < min_split) ||
+        (sum(ntot-ncat(i,_)) < min_split)) {
+      flags_pass = false;
+    }
+    if (flags_pass) {
       // for convenience, left is the category being split on and
       // throw everyone else into right branch)
       Block b_left((NumericVector) ycat(i,_),
