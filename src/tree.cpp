@@ -19,13 +19,13 @@ List rcpp_BuildTree(NumericVector y, NumericMatrix x,
                     IntegerVector trt, IntegerMatrix ordering,
                     IntegerVector ncat,
                     int min_bucket, int min_split, int max_depth) {
-  Rprintf("Start of something new?\n");
+  Rprintf("Start of something new\n");
 
   int ncol = x.ncol();
   int nrow = x.nrow();
   int ntrt = max(trt) + 1;
 
-  Rprintf("Init the root?\n");
+  Rprintf("Init the root\n");
   // Initialize the root
   NumericVector root_y(ntrt);
   IntegerVector root_n(ntrt);
@@ -36,6 +36,7 @@ List rcpp_BuildTree(NumericVector y, NumericMatrix x,
   Block b(root_y, root_n);
 
   // TODO: make sure that this is the right way of instantiating an object
+  // I think so - basically dynamic memory is when you don't know the size of the object at compile time, which is not our case.
   // Node *root = new Node();
   // root->blok = b;
   Node root = Node();

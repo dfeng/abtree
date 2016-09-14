@@ -20,17 +20,22 @@ void Partition(Node *splitnode,
                int min_bucket, int min_split, int max_depth,
                int level);
 
-bool BestSplitCat(const DoubleVec &y, const DoubleVec &x, const IntVec &trt,
-                  const IntVec &ordering, int K,
-                  int start, int end, int min_bucket,
-                  Block &opt_left, Block &opt_right,
-                  double &split_tau, int &split_left, int &split_right);
-
 bool BestSplitNum(const NumericVector &y, const NumericVector &x,
                   const IntegerVector &trt, const IntegerVector &ordering,
-                  int ntrt, int start, int end, int min_bucket,
+                  int ntrt, int start, int end,
+                  int min_bucket, int min_split,
                   Block &opt_left, Block &opt_right,
                   double &split_tau, int &split_n);
+
+bool BestSplitCat(const NumericVector &y, const NumericVector &x,
+                  const IntegerVector &trt, const IntegerVector &ordering, 
+                  int ntrt, int K,
+                  int start, int end,
+                  int min_bucket, int min_split,
+                  Block &opt_left, Block &opt_right,
+                  double &split_tau,
+                  int &split_left, int &split_right);
+
 // reorder
 
 void Reorder(int split_col, int ncol,
