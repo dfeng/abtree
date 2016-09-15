@@ -5,14 +5,13 @@
   Data Structure defining blocks and nodes of the tree
  */
 
-// do i need to include vector.h?
-#include "vector.h"
 #include <Rcpp.h>
 using namespace Rcpp;
 
 /*
   Blocks of data that correspond to splits in the decision tree
  */
+
 struct Block {
   NumericVector y; // response / trt
   IntegerVector n; // count / trt

@@ -1,4 +1,5 @@
 #include <Rcpp.h>
+#include <float.h> // DBL_MAX
 
 #include "vector.h" // shorthands for std::vector<type>
 #include "node.h" // custom data types
@@ -19,13 +20,13 @@ List rcpp_BuildTree(NumericVector y, NumericMatrix x,
                     IntegerVector trt, IntegerMatrix ordering,
                     IntegerVector ncat,
                     int min_bucket, int min_split, int max_depth) {
-  Rprintf("Start of something new\n");
+  // Rprintf("Start of something new\n");
 
   int ncol = x.ncol();
   int nrow = x.nrow();
   int ntrt = max(trt) + 1;
 
-  Rprintf("Init the root\n");
+  // Rprintf("Init the root\n");
   // Initialize the root
   NumericVector root_y(ntrt);
   IntegerVector root_n(ntrt);
@@ -42,19 +43,20 @@ List rcpp_BuildTree(NumericVector y, NumericMatrix x,
   Node root = Node();
   root.blok = b;
 
-  Rprintf("Time to partition\n");
+  // Rprintf("Time to partition\n");
   // TODO: do we want to do the ordering matrix in cpp?
   Partition(&root, y, x, trt, ordering,
             ntrt, ncat,
             ncol, 0, nrow,
             min_bucket, min_split, max_depth,
             0);
-  Rprintf("Done partition\n");
+  // Rprintf("Done partition\n");
+
+  DoubleMat cp_table;
   // if no good splits were found even for the root
-  // NumericMatrix cp_table;
-  // if (root->split_col != -1) {
-  //   cp_table = TreeComplexity(root);
-  // }
+  if (root.split_col != -1) {
+    cp_table = TreeComplexity(&root);
+  }
 
   DoubleMat tree_df;
   ExportTree(&root, tree_df);

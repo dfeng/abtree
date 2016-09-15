@@ -1,8 +1,9 @@
 #include <Rcpp.h>
-#include <vector>
-#include <float.h>
+#include <float.h> // DBL_MAX
+
 #include <assert.h>
 
+#include "vector.h"
 #include "node.h"
 #include "abtree.h"
 

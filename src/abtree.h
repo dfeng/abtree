@@ -10,7 +10,8 @@ using namespace Rcpp;
 // ===  Declaring Auxiliary Functions  ===  //
 // =======================================  //
 
-// split
+// ========================  Split  ========================  // 
+
 
 void Partition(Node *splitnode,
                const NumericVector &y, const NumericMatrix &x,
@@ -36,14 +37,15 @@ bool BestSplitCat(const NumericVector &y, const NumericVector &x,
                   double &split_tau,
                   int &split_left, int &split_right);
 
-// reorder
+// ========================  Reorder  ========================  // 
+
 
 void Reorder(int split_col, int ncol,
              int split_n,
              int start, int end,
              IntegerMatrix &ordering);
 
-// prune
+// ========================  Prune  ========================  // 
 
 DoubleMat TreeComplexity(Node *root);
 void SetComplexity(Node *node, double &max_complexity, Node **max_node);

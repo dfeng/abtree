@@ -1,6 +1,6 @@
 #include <Rcpp.h>
+#include <float.h> // DBL_MAX
 
-#include "vector.h"
 #include "node.h"
 #include "abtree.h"
 
@@ -27,8 +27,8 @@ void Partition(Node *splitnode,
                int ncol, int start, int end,
                int min_bucket, int min_split, int max_depth,
                int level) {
-  Rprintf("Entering Partition\n");
-  Rprintf("start/end %d %d\n", start, end);
+  // Rprintf("Entering Partition\n");
+  // Rprintf("start/end %d %d\n", start, end);
   int split_col, split_n;
   int split_first, split_last; // first and last for categorical
   int split_type; // optimal split type (ncat)
@@ -46,7 +46,7 @@ void Partition(Node *splitnode,
     int current_split_n = -1;
     int current_split_first = -1, current_split_last = -1;
     Block current_left, current_right;
-    Rprintf("split on col %d\n", i);
+    // Rprintf("split on col %d\n", i);
     if (ncat[i] == 0) {
       if (!BestSplitNum(y, x(_,i), trt, ordering(_,i), ntrt,
                         start, end, min_bucket, min_split,
@@ -64,8 +64,8 @@ void Partition(Node *splitnode,
     }
 
     double current_Q = current_left.opt_Q + current_right.opt_Q;
-    Rprintf("current_Q:%0.2f opt_Q:%0.2f split_tau:%0.2f col: %d\n",
-            current_Q, opt_Q, current_tau, i);
+    // Rprintf("current_Q:%0.2f opt_Q:%0.2f split_tau:%0.2f col: %d\n",
+    //         current_Q, opt_Q, current_tau, i);
     if (current_Q > opt_Q) {
       split_type = ncat[i]; // categorical?
       opt_Q = current_Q;
@@ -82,19 +82,19 @@ void Partition(Node *splitnode,
       }
     }
   }
-  Rprintf("finished loop for possible splits\n");
+  // Rprintf("finished loop for possible splits\n");
   // if every attempted split returned false
   // which should happen when min_bucket/min_split fails every time
   if (opt_Q == splitnode->blok.opt_Q) {
     // splitnode->is_leaf = true;
-    Rprintf("but we didn't find anything good\n");
+    // Rprintf("but we didn't find anything good\n");
     return;
   }
-  Rprintf("And we found good stuff\n");
+  // Rprintf("And we found good stuff\n");
   // Rprintf("split_col %d split_tau %0.2f start %d end %d\n",
   //         split_col, split_tau, start, end);
-
-  if (split_type > 0) {
+  if (split_type > 0) { // categorical
+    // Rcpp::Rcout << "ordering" << std::endl << ordering << std::endl;
     int tempvec[end - start];
     for (int i = 0; i < split_last - split_first; i++) {
       tempvec[i] = ordering(split_first + i, split_col);
@@ -111,9 +111,12 @@ void Partition(Node *splitnode,
     split_n = start + split_last - split_first;
   }
 
+  // Rcpp::Rcout << "ordering" << std::endl << ordering << std::endl;
   // Reorder the ordering matrix
   // Rprintf("ORDERING START");
+  // Rcpp::Rcout << "split_col " << split_col << " ncol " << ncol << " split_n " << split_n << " start " << start << " end " << end << std::endl;
   Reorder(split_col, ncol, split_n, start, end, ordering);
+  // Rcpp::Rcout << "ordering" << std::endl << ordering << std::endl;
   // Rprintf("ORDERING STOP");
 
   // Rprintf("opt_Q %0.2f \n", opt_Q);
@@ -134,7 +137,7 @@ void Partition(Node *splitnode,
   splitnode->right->blok = opt_right;
   // Rprintf("right: opt_Q %0.2f opt_trt %d\n", opt_right.opt_Q, opt_right.opt_trt);
 
-  Rprintf("recurse!\n");
+  // Rprintf("recurse!\n");
   // now recurse!
   // if (opt_left.total_n > min_split)
   Partition(splitnode->left, y, x, trt, ordering, ntrt, ncat, ncol, start, split_n, min_bucket, min_split, max_depth, level+1);
@@ -148,16 +151,15 @@ bool BestSplitNum(const NumericVector &y, const NumericVector &x,
                   int min_bucket, int min_split,
                   Block &opt_left, Block &opt_right,
                   double &split_tau, int &split_n) {
-  Rprintf("Start Numeric Best Split\n");
-  Rprintf("start/end %d %d\n", start, end);
+  // Rprintf("Start Numeric Best Split\n");
+  // Rprintf("start/end %d %d\n", start, end);
   const int len = end - start;
-
   // we will use ncum to keep track of counts of each treatment
   // and response for each treatment as we proceed through the data
   IntegerMatrix ncum(len, ntrt);
   NumericMatrix ycum(len, ntrt);
 
-  Rprintf("Calculating Cumulative Sums\n");
+  // Rprintf("Calculating Cumulative Sums\n");
   // calculate cumulative sums for use later
   for (int i=start; i < end; i++) {
     int o = ordering[i];
@@ -175,17 +177,16 @@ bool BestSplitNum(const NumericVector &y, const NumericVector &x,
   }
 
   // start looping through the data
-  Rprintf("Start Loop\n");
+  // Rprintf("Start Loop\n");
   double opt_Q = -DBL_MAX;
   int n = 0; // convenient to keep track of n thus far, same as i-start+1
-  double prevX = x[ordering[start]];
-
+  double prev_x = x[ordering[start]];
   for (int i = start; i < end; i++) {
-    // Rprintf("i:%d o:%d prevX:%0.2f  currX:%0.2f, ncum:%d %d\n", i, o, prevX, x[o], ncum(n,0), ncum(n,1));
+    // Rprintf("i:%d o:%d prev_x:%0.2f  currX:%0.2f, ncum:%d %d\n", i, ordering[i], prev_x, x[ordering[i]], ncum(n,0), ncum(n,1));
 
     // check if current x is different, in which case we have passed enough
     // data to consider a split
-    if (x[ordering[i]] > prevX) {
+    if (x[ordering[i]] > prev_x) {
       bool flags_pass = true;
       // bucket test
       for (int j = 0; j < ntrt; j++) {
@@ -202,7 +203,7 @@ bool BestSplitNum(const NumericVector &y, const NumericVector &x,
       }
       
       if (flags_pass) {
-        // now evaluate the split at prevX
+        // now evaluate the split at prev_x
         Block b_left((NumericVector) ycum(n-1,_),
                      (IntegerVector) ncum(n-1,_));
         Block b_right((NumericVector) ycum(len-1,_)-ycum(n-1,_),
@@ -212,18 +213,12 @@ bool BestSplitNum(const NumericVector &y, const NumericVector &x,
           opt_Q = b_left.opt_Q + b_right.opt_Q;
           opt_left = b_left;
           opt_right = b_right;
-          split_tau = prevX;
+          split_tau = prev_x;
           split_n = i;
-          // Rprintf("tau: %0.2f split_n %d i %d n:%d start:%d, left: n(%d,%d) p(%0.2f, %0.2f), right:n (%d, %d) p(%0.2f, %0.2f) opt: %d %d\n", split_tau, split_n, i, n, start,
-          //         b_left.n[0], b_left.n[1],
-          //         b_left.y[0], b_left.y[1],
-          //         b_right.n[0], b_right.n[1],
-          //         b_right.y[0], b_right.y[1],
-          //         b_left.opt_trt, b_right.opt_trt);
         }
       }
-      // now we have a new prevX;
-      prevX = x[ordering[i]];
+      // now we have a new prev_x;
+      prev_x = x[ordering[i]];
     }
     n++;
   }
@@ -241,16 +236,16 @@ bool BestSplitCat(const NumericVector &y, const NumericVector &x,
                   Block &opt_left, Block &opt_right,
                   double &split_tau,
                   int &split_left, int &split_right) {
-  Rprintf("Start Categorical Best Split\n");
-  Rprintf("start/end %d %d\n", start, end);
-  IntegerMatrix ncat(K, ntrt); // defaults to 0
-  NumericMatrix ycat(K, ntrt); // defaults to 0.0
+  // Rprintf("Start Categorical Best Split\n");
+  // Rprintf("start/end %d %d\n", start, end);
+  IntegerMatrix ncat(K,ntrt); // defaults to 0
+  NumericMatrix ycat(K,ntrt); // defaults to 0.0
 
   IntegerVector ntot(ntrt); // defaults to 0
   NumericVector ytot(ntrt); // defaults to 0.0
 
-  Rprintf("Calculating Sums\n");
-  int current_cat = -INT_MAX;
+  // Rprintf("Calculating Sums\n");
+  int current_cat = -1;
   double prev_cat = -DBL_MAX;
   for (int i = start; i < end; i++) {
     int o = ordering[i];
@@ -263,22 +258,14 @@ bool BestSplitCat(const NumericVector &y, const NumericVector &x,
     ntot[trt[o]]++;
     ytot[trt[o]] += y[o];
   }
+  // Rcpp::Rcout << "ncat " << ncat << std::endl;
+  // Rcpp::Rcout << "ycat " << ycat << std::endl;
 
-  for (int i = 0; i < K; i++) {
-    for (int j = 0; j < ntrt; j++) {
-      Rprintf("cat,%d trt,%d (n %d, y %0.2f)\n",
-              i, j, ncat(i,j), ycat(i,j));
-    }
-  }
-
+  // Rprintf("Start Loop\n");
   double opt_Q = -DBL_MAX;
-
-  Rprintf("Start Loop\n");
-  // possible splits are 0, 1, ..., K-1
   int left = start;
   for (int i = 0; i < K; i++) {
-    // Rprintf("i:%d o:%d prevX:%0.2f  currX:%0.2f, ncum:%d %d\n", i, o, prevX, x[o], ncum[n][0], ncum[n][1]);
-    // check that we have at least the right minimum number of observations
+    // Rprintf("i: %d\n", i);
     bool flags_pass = true;
     // bucket test
     for (int j = 0; j < ntrt; j++) {
@@ -294,14 +281,20 @@ bool BestSplitCat(const NumericVector &y, const NumericVector &x,
       flags_pass = false;
     }
     if (flags_pass) {
+      // Rprintf("Passed\n");
       // for convenience, left is the category being split on and
       // throw everyone else into right branch)
       Block b_left((NumericVector) ycat(i,_),
                    (IntegerVector) ncat(i,_));
-      Block b_right((NumericVector) ytot-ycat(i,_),
-                    (IntegerVector) ntot-ncat(i,_));
+      Block b_right((NumericVector) (ytot - (NumericVector) ycat(i,_)),
+                    (IntegerVector) (ntot - (IntegerVector) ncat(i,_)));
 
-      Rprintf("cat:%d left: %0.2f right: %0.2f \n", i, b_left.opt_Q, b_right.opt_Q);
+      // Rcpp::Rcout << "ly " << (NumericVector) ycat(i,_) << std::endl;
+      // Rcpp::Rcout << "ln " << (IntegerVector) ncat(i,_) << std::endl;
+      // Rcpp::Rcout << "ry " << (NumericVector) (ytot - (NumericVector) ycat(i,_)) << std::endl;
+      // Rcpp::Rcout << "rn " << (IntegerVector) (ntot - (IntegerVector) ncat(i,_)) << std::endl;
+
+      // Rprintf("cat:%d left: %0.2f right: %0.2f \n", i, b_left.opt_Q, b_right.opt_Q);
 
       if (b_left.opt_Q + b_right.opt_Q > opt_Q) {
         opt_Q = b_left.opt_Q + b_right.opt_Q;
@@ -310,12 +303,10 @@ bool BestSplitCat(const NumericVector &y, const NumericVector &x,
         split_tau = (double) i;
         split_left = left;
         split_right = left + sum(ncat(i,_));
-        // Rprintf("tau: %0.2f split_n %d i %d start:%d\n", split_tau, split_n, i, start);
       }
     }
     left += sum(ncat(i,_));
   }
-
   // if we didn't make any splits, return false
   return (opt_Q != -DBL_MAX);
 }

@@ -26,25 +26,22 @@ void Reorder(int split_col, int ncol,
              int split_n,
              int start, int end,
              IntegerMatrix &ordering) {
-  const int n = end - start; // the total number of observations
-
   // column j of ordering
   for (int j=0; j < ncol; j++) {
-    // Rprintf("Reorder: column %d with size %d\n", j, ordering[j].size());
     // we need to take start away from everything
     int leftpos = 0;
     int rightpos = split_n - start;
-    int tempvec[n];
+    int tempvec[end - start];
     // making sure we're not in the column that's already sorted
     if (j == split_col) continue;
 
     // data row i in column j
-    for (int i=start; i < end; i++) {
+    for (int i = start; i < end; i++) {
       // Rprintf("Reorder: data row %d, we are searching for %d \n", i, ordering[j][i]);
       bool wentright = true;
       // we only need to check from start to split_n (the first group)
-      for (int k=start; k < split_n; k++) {
-        // do we have a match
+      for (int k = start; k < split_n; k++) {
+        // do we have a match?
         // Rprintf("Reorder: match row %d with value %d\n", k, ordering[split_col][k]);
         if (ordering(i,j) == ordering(k,split_col)) {
           // Rprintf("Reorder: a match! %d\n", ordering[split_col][k]);
