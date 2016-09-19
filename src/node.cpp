@@ -28,10 +28,10 @@ Block::Block(NumericVector y0, IntegerVector n0) {
   // calculate optimal Q
   switch(loss_type) {
     // regret/L1
-    case 0: opt_Q = total_n * (opt_prob - p);
+    case 0: opt_Q = total_n * sum(opt_prob - p);
             break;
     // LS/L2
-    case 1: opt_Q = total_n * pow(opt_prob - p, 2);
+    case 1: opt_Q = total_n * sum(pow(opt_prob - p, 2));
             break;
   }
 };
