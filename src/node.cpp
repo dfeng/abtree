@@ -13,7 +13,7 @@ Block::Block(NumericVector y0, IntegerVector n0) {
   
   // calculating p
   opt_prob = -1.0;
-  tot_prob = 0;
+  double tot_prob = 0;
   for (int i = 0; i < ntrt; i++) {
     p[i] = y[i] / n[i];
     tot_prob += p[i];

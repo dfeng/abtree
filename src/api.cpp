@@ -1,6 +1,5 @@
 #include <Rcpp.h>
 
-
 #include "node.h"
 #include "abtree.h"
 

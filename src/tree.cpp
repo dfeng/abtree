@@ -6,6 +6,7 @@
 #include "abtree.h" // master header file
 
 using namespace Rcpp;
+
 /*
  *
  * Idioms:
@@ -13,7 +14,6 @@ using namespace Rcpp;
  *  - use natire cpp data structures o/w
  * 
  */
-
 
 // [[Rcpp::export]]
 List rcpp_BuildTree(NumericVector y, NumericMatrix x,
@@ -54,6 +54,7 @@ List rcpp_BuildTree(NumericVector y, NumericMatrix x,
 
   DoubleMat cp_table;
   // if no good splits were found even for the root
+  // the skip cp_table
   if (root.split_col != -1) {
     cp_table = TreeComplexity(&root);
   }
@@ -63,50 +64,50 @@ List rcpp_BuildTree(NumericVector y, NumericMatrix x,
 
   List ret;
   ret["tree"] = wrap(tree_df);
-  // ret["cp.table"] = wrap(cp_table);
+  ret["cp.table"] = wrap(cp_table);
   return ret;
 }
 
-// // [[Rcpp::export]]
-// List rcpp_Prune(NumericMatrix tree_df, std::vector<double> y,
-//                 NumericMatrix x_temp, std::vector<int> trt,
-//                 std::vector<int> ncat,
-//                 NumericMatrix cp_tbl) {
-//   Node * root = ImportTree(tree_df);
-//   DoubleMat cp_table = NumToDoubleMat(cp_tbl);
+// [[Rcpp::export]]
+List rcpp_Prune(NumericMatrix tree_df,
+                NumericVector y, NumericMatrix valid_x,
+                IntegerVector trt, IntegerVector ncat,
+                NumericMatrix cp_tbl) {
+  Node * root = ImportTree(tree_df);
+  DoubleMat cp_table = NumToDoubleMat(cp_tbl);
 
-//   DoubleMat valid;
-//   for (int j = 0; j < x_temp.ncol(); j++) {
-//     DoubleVec xx;
-//     for (int i = 0; i < x_temp.nrow(); i++) {
-//       xx.push_back(x_temp(i,j));
-//     }
-//     valid.push_back(xx);
-//   }
+  // DoubleMat valid;
+  // for (int j = 0; j < x_temp.ncol(); j++) {
+  //   DoubleVec xx;
+  //   for (int i = 0; i < x_temp.nrow(); i++) {
+  //     xx.push_back(x_temp(i,j));
+  //   }
+  //   valid.push_back(xx);
+  // }
 
-//   PredictPrune(root, y, valid, trt, ncat, cp_table);
+  PredictPrune(root, y, valid, trt, ncat, cp_table);
 
-//   // find maximum cp_value
-//   double argmax_cp;
-//   double max_profit = -DBL_MAX;
-//   for (int i = 0; i < cp_table.size(); i++) {
-//     if (cp_table[i][1] >= max_profit) {
-//       max_profit = cp_table[i][1];
-//       argmax_cp = cp_table[i][0];
-//     }
-//   }
-//   // Rprintf("argmax_cp %0.5f\n", argmax_cp);
-//   // Rprintf("max_profit %0.5f\n", max_profit);
-//   PruneTree(root, argmax_cp);
+  // find maximum cp_value
+  double argmax_cp;
+  double max_profit = -DBL_MAX;
+  for (int i = 0; i < cp_table.size(); i++) {
+    if (cp_table[i][1] >= max_profit) {
+      max_profit = cp_table[i][1];
+      argmax_cp = cp_table[i][0];
+    }
+  }
+  // Rprintf("argmax_cp %0.5f\n", argmax_cp);
+  // Rprintf("max_profit %0.5f\n", max_profit);
+  PruneTree(root, argmax_cp);
 
-//   DoubleMat new_tree_df;
-//   ExportTree(root, new_tree_df);
-//   // return wrap(new_tree_df);
-//   List z;
-//   z["tree"] = wrap(new_tree_df);
-//   z["cp.table"] = wrap(cp_table);
-//   return z;
-// }
+  DoubleMat new_tree_df;
+  ExportTree(root, new_tree_df);
+  // return wrap(new_tree_df);
+  List z;
+  z["tree"] = wrap(new_tree_df);
+  z["cp.table"] = wrap(cp_table);
+  return z;
+}
 
 // // [[Rcpp::export]]
 // List rcpp_Predict(NumericMatrix tree, std::vector<double> y,

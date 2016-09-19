@@ -28,7 +28,8 @@ abtree <- function(formula, data, min.bucket=10, min.split=30,
 
   ncat <- sapply(m$x, function(t) length(levels(t)))
   y <- as.numeric(m$y)
-  x <- data.matrix(m$x) # converts everything to numeric, which is what we want since the Rcpp code will take a NumericMatrix
+  x <- data.matrix(m$x) # converts everything to numeric, which is what we want
+                        # since the Rcpp code will take a NumericMatrix
   x[,x.types=="factor"] <- x[,x.types=="factor"]-1 # correcting for 0-index
   trt <- as.integer(m$trt)
 

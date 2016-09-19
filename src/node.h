@@ -27,36 +27,7 @@ struct Block {
 
   // Constructors
   Block() {}; // default constructor, never used
-  Block(NumericVector y0, IntegerVector n0)  {
-  // assigning to block struct
-  y = y0; n = n0;
-  int ntrt = y0.size();
-  NumericVector p(ntrt);
-  total_n = 0;
-  
-  // calculating p
-  opt_prob = -1.0;
-  double tot_prob = 0.0;
-  for (int i = 0; i < ntrt; i++) {
-    p[i] = y[i] / n[i];
-    tot_prob += p[i];
-    total_n += n[i];
-    if (p[i] > opt_prob) {
-      opt_prob = p[i];
-      opt_trt = i;
-    }
-  }
-  // TODO: loss types
-  // calculate optimal Q
-  switch(1) {
-    // regret/L1
-    case 0: opt_Q = total_n * sum(opt_prob - p);
-            break;
-    // LS/L2
-    case 1: opt_Q = total_n * sum(pow(opt_prob - p, 2));
-            break;
-  }
-};
+  Block(NumericVector y0, IntegerVector n0);
 };
 
 /*
@@ -93,18 +64,9 @@ struct Node {
   Node *right; // right branch
 
   // Constructors
-  Node() {
-    this->left = nullptr;
-    this->right = nullptr;
-    this->pruned = false;
-    this->branch = -1;
-    this->complexity = -1;
-    this->split_col = -1;
-    this->opt_Q = -1.0;
-  };
-  // Node(Block b);
+  Node();
 
-  void print();
+  // void print();
 };
 
 #endif

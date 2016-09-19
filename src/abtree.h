@@ -45,19 +45,23 @@ void Reorder(int split_col, int ncol,
              int start, int end,
              IntegerMatrix &ordering);
 
-// ========================  Prune  ========================  // 
+// ========================  Complexity  ========================  // 
+
 
 DoubleMat TreeComplexity(Node *root);
 void SetComplexity(Node *node, double &max_complexity, Node **max_node);
 void SetBranch(Node *node, double branch);
 
-void PredictPrune(Node *root, const DoubleVec &y, const DoubleMat &x,
-                  const IntVec &trt, IntVec &ncat,
-                  DoubleMat &cp_table);
-void FillComplexity(Node *node, DoubleMat &cp_table);
-void PredictPrune2(Node *root, const DoubleVec &y, const DoubleMat &x, const IntVec &trt, IntVec &ncat, DoubleMat &cp_table);
-void PruneTree(Node *root, double complexity);
-void TruncateNode(Node *node);
+// ========================  Prune  ========================  // 
+
+
+// void PredictPrune(Node *root, const DoubleVec &y, const DoubleMat &x,
+//                   const IntVec &trt, IntVec &ncat,
+//                   DoubleMat &cp_table);
+// void FillComplexity(Node *node, DoubleMat &cp_table);
+// void PredictPrune2(Node *root, const DoubleVec &y, const DoubleMat &x, const IntVec &trt, IntVec &ncat, DoubleMat &cp_table);
+// void PruneTree(Node *root, double complexity);
+// void TruncateNode(Node *node);
 
 // api
 
