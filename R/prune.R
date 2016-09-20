@@ -7,27 +7,22 @@
 #' @importFrom rpart prune
 #' @exportClass abtree
 #' @export
-prune.abtree <- function(object, valid.data) {
-  # if (!exists("cp")) {
-  #   cp <- object$cp.table$cp.param[which.max(object$cp.table$profit)]
-  # }
-  if (length(object$cp.table) == 0) {
-    return(object)
-  }
-  data <- ParseFormula(object$formula, valid.data)
-  data$trt <- TreatToAB(data$trt, object$treatment)
-  # print(head(data$trt))
+prune.abtree <- function(obj, valid.data) {
+  if (length(obj$cp.table) == 0)
+    return(obj)
 
-  x <- data.matrix(data$x)
-  for (j in which(object$var.types[1,]>=1)) {
-    x[,j] <- as.numeric(x[,j]-1)
-  }
+  m <- ParseFormula(obj$formula, valid.data)
 
-  out <- rcpp_Prune(cbind(matrix(unlist(object$tree), ncol=14, byrow=T)),
-                    data$y, x, data$trt, as.integer(object$var.types[2,]),
-                    cbind(matrix(unlist(object$cp.table), ncol=2, byrow=T)))
+  if (obj$trt.levels != levels(m$trt))
+    stop("The treatment variable levels have changed!")
+  if (!all.equal(obj$x.levels, sapply(m$x, function(t) levels(t))))
+    stop("At least one predictor has different levels!")
 
-  object$tree <- out$tree
-  object$cp.table <- out$cp.table
-  return(object)
+  out <- rcpp_Prune(cbind(matrix(unlist(obj$tree), ncol=14, byrow=T)),
+                    m$y, m$x, m$trt, obj$ncat, length(obj$trt.levels),
+                    cbind(matrix(unlist(obj$cp.table), ncol=2, byrow=T)))
+
+  obj$tree <- out$tree
+  obj$cp.table <- out$cp.table
+  obj
 }

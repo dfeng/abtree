@@ -18,13 +18,12 @@ using namespace Rcpp;
 // [[Rcpp::export]]
 List rcpp_BuildTree(NumericVector y, NumericMatrix x,
                     IntegerVector trt, IntegerMatrix ordering,
-                    IntegerVector ncat,
+                    IntegerVector ncat, int ntrt,
                     int min_bucket, int min_split, int max_depth) {
   // Rprintf("Start of something new\n");
 
   int ncol = x.ncol();
   int nrow = x.nrow();
-  int ntrt = max(trt) + 1;
 
   // Rprintf("Init the root\n");
   // Initialize the root
@@ -70,22 +69,13 @@ List rcpp_BuildTree(NumericVector y, NumericMatrix x,
 
 // [[Rcpp::export]]
 List rcpp_Prune(NumericMatrix tree_df,
-                NumericVector y, NumericMatrix valid_x,
-                IntegerVector trt, IntegerVector ncat,
-                NumericMatrix cp_tbl) {
-  Node * root = ImportTree(tree_df);
+                NumericVector valid_y, NumericMatrix valid_x,
+                IntegerVector valid_trt, IntegerVector ncat,
+                int ntrt, NumericMatrix cp_tbl) {
+  Node root = ImportTree(tree_df, ntrt);
   DoubleMat cp_table = NumToDoubleMat(cp_tbl);
 
-  // DoubleMat valid;
-  // for (int j = 0; j < x_temp.ncol(); j++) {
-  //   DoubleVec xx;
-  //   for (int i = 0; i < x_temp.nrow(); i++) {
-  //     xx.push_back(x_temp(i,j));
-  //   }
-  //   valid.push_back(xx);
-  // }
-
-  PredictPrune(root, y, valid, trt, ncat, cp_table);
+  PredictPrune(&root, valid_y, valid_x, valid_trt, ncat, cp_table);
 
   // find maximum cp_value
   double argmax_cp;
@@ -98,10 +88,10 @@ List rcpp_Prune(NumericMatrix tree_df,
   }
   // Rprintf("argmax_cp %0.5f\n", argmax_cp);
   // Rprintf("max_profit %0.5f\n", max_profit);
-  PruneTree(root, argmax_cp);
+  PruneTree(&root, argmax_cp);
 
   DoubleMat new_tree_df;
-  ExportTree(root, new_tree_df);
+  ExportTree(&root, new_tree_df);
   // return wrap(new_tree_df);
   List z;
   z["tree"] = wrap(new_tree_df);

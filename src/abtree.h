@@ -67,13 +67,13 @@ void SetBranch(Node *node, double branch);
 
 int NodeToRow(Node *node, DoubleMat &tree_df, int id);
 void ExportTree(Node *node, DoubleMat &tree_df);
-// void RowToNode(Node *parent, NumericMatrix &tree_df, int id);
-// Node * ImportTree(NumericMatrix &tree_df);
+void RowToNode(Node *parent, NumericMatrix &tree_df, int id);
+Node ImportTree(NumericMatrix &tree_df);
 
 // predict
-Node * PredictNode(Node *node, NumericMatrix::Row xrow, IntVec &ncat);
-IntegerVector Predict(Node *root, const DoubleVec &y, NumericMatrix x,
-             const IntVec &trt, IntVec &ncat);
-void FillTest(Node *root);
+// Node * PredictNode(Node *node, NumericMatrix::Row xrow, IntVec &ncat);
+// IntegerVector Predict(Node *root, const DoubleVec &y, NumericMatrix x,
+//              const IntVec &trt, IntVec &ncat);
+// void FillTest(Node *root);
 
 #endif

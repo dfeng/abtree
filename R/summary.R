@@ -1,25 +1,14 @@
-# =================  #
-# ===  Helpers  ===  #
-# =================  #
-ParseFormula <- function(formula, data) {
-  rhs <- formula[[3]] # grp | hour + browser
-  response <- formula[[2]] # y
-  treat <- rhs[[2]] # grp
-  covariates <- rhs[[3]] # hour + browser
-
-  if (deparse(response) %in% colnames(data))
-    y <- eval(response, data)
-  else
-    stop("Response variable not found in data.")
-  if (deparse(treat) %in% colnames(data))
-    trt <- eval(treat, data)
-  else
-    stop("Treatment variable not found in data.")
-
-  cov.names <- all.vars(covariates) # c("hour", "browser")
-  # TODO: proper try/catch error handling in case covariate note in data.
-  x <- as.data.frame(data[,cov.names], stringsAsFactors=FALSE)
-  list(y=y,x=x,trt=trt)
+#' summary.abtree
+#'
+#' @param object of class 'abtree'
+#'
+#' @return a data frame summarizing the fitted tree
+#' @export
+#'
+summary.abtree <- function(object) {
+  cat("\nabtree Summary:\n\n")
+  print(FormatTree(object))
+  invisible(FormatTree(object))
 }
 
 FormatTree <- function(object, child_id=FALSE, digits=3, scientific=FALSE) {
@@ -58,19 +47,4 @@ FormatTree <- function(object, child_id=FALSE, digits=3, scientific=FALSE) {
   tree$split_var[is_leaf] <- "<leaf>"
   return(tree)
 
-}
-
-SplitData <- function(data, order, splitpos) {
-  if (is.data.frame(data)) {
-    data <- data[order,]
-    l <- nrow(data)
-    train <- data[1:splitpos,]
-    test <- data[(splitpos+1):l,]
-  } else {
-    data <- data[order]
-    l <- length(data)
-    train <- data[1:splitpos]
-    test <- data[(splitpos+1):l]
-  }
-  return(list(train=train, test=test))
 }
