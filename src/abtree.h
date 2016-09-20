@@ -55,20 +55,23 @@ void SetBranch(Node *node, double branch);
 // ========================  Prune  ========================  // 
 
 
-// void PredictPrune(Node *root, const DoubleVec &y, const DoubleMat &x,
-//                   const IntVec &trt, IntVec &ncat,
-//                   DoubleMat &cp_table);
-// void FillComplexity(Node *node, DoubleMat &cp_table);
+void PredictPrune(Node *root, const DoubleVec &y, const DoubleMat &x,
+                  const IntVec &trt, IntVec &ncat,
+                  DoubleMat &cp_table);
+void FillComplexity(Node *node, DoubleMat &cp_table);
 // void PredictPrune2(Node *root, const DoubleVec &y, const DoubleMat &x, const IntVec &trt, IntVec &ncat, DoubleMat &cp_table);
-// void PruneTree(Node *root, double complexity);
-// void TruncateNode(Node *node);
+void PruneTree(Node *root, double complexity);
+void TruncateNode(Node *node);
 
-// api
+// ========================  API  ========================  // 
 
-int NodeToRow(Node *node, DoubleMat &tree_df, int id);
+void DeleteTree(Node *node);
 void ExportTree(Node *node, DoubleMat &tree_df);
-void RowToNode(Node *parent, NumericMatrix &tree_df, int id);
-Node ImportTree(NumericMatrix &tree_df);
+int NodeToRow(Node *node, DoubleMat &tree_df, int id);
+Node * ImportTree(NumericMatrix &tree_df, int ntrt);
+void RowToNode(Node *parent, NumericMatrix &tree_df, int row, int ntrt);
+
+DoubleMat NumToDoubleMat(NumericMatrix m);
 
 // predict
 // Node * PredictNode(Node *node, NumericMatrix::Row xrow, IntVec &ncat);

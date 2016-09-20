@@ -66,7 +66,8 @@ struct Node {
   // Constructors
   Node();
 
-  // void print();
+  // Helper Functions
+  void print();
 };
 
 #endif

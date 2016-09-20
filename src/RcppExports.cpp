@@ -24,19 +24,3 @@ BEGIN_RCPP
     return __result;
 END_RCPP
 }
-// rcpp_Prune
-List rcpp_Prune(NumericMatrix tree_df, NumericVector y, NumericMatrix valid_x, IntegerVector trt, IntegerVector ncat, NumericMatrix cp_tbl);
-RcppExport SEXP abtree_rcpp_Prune(SEXP tree_dfSEXP, SEXP ySEXP, SEXP valid_xSEXP, SEXP trtSEXP, SEXP ncatSEXP, SEXP cp_tblSEXP) {
-BEGIN_RCPP
-    Rcpp::RObject __result;
-    Rcpp::RNGScope __rngScope;
-    Rcpp::traits::input_parameter< NumericMatrix >::type tree_df(tree_dfSEXP);
-    Rcpp::traits::input_parameter< NumericVector >::type y(ySEXP);
-    Rcpp::traits::input_parameter< NumericMatrix >::type valid_x(valid_xSEXP);
-    Rcpp::traits::input_parameter< IntegerVector >::type trt(trtSEXP);
-    Rcpp::traits::input_parameter< IntegerVector >::type ncat(ncatSEXP);
-    Rcpp::traits::input_parameter< NumericMatrix >::type cp_tbl(cp_tblSEXP);
-    __result = Rcpp::wrap(rcpp_Prune(tree_df, y, valid_x, trt, ncat, cp_tbl));
-    return __result;
-END_RCPP
-}
