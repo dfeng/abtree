@@ -61,7 +61,7 @@ List rcpp_BuildTree(NumericVector y, NumericMatrix x,
   // DeleteTree(root);
 
   // Pointer to our cpp tree struct
-  XPtr<Node> ptr(root);
+  XPtr<Node, PreserveStorage, DeleteTree> ptr(root, true);
 
   List ret;
   ret["cpp.tree"] = wrap(tree_df);
