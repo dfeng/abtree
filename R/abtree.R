@@ -44,7 +44,6 @@ abtree <- function(formula, data, min.bucket=10, min.split=30,
 
   class(out) <- "abtree"
   out$trt.levels <- trt.levels
-
   # TODO: make this lapply(m$x, levels)
   out$cat.levels <- lapply(1:ncol(m$x), function(c) levels(m$x[,c]))
   out$formula <- formula
@@ -53,5 +52,7 @@ abtree <- function(formula, data, min.bucket=10, min.split=30,
   out$ncat <- ncat
   out$y.name <- m$y.name
   out$trt.name <- m$trt.name
+  out$tree <- FormatTree(out)
+  out$cp.table <- matrix(unlist(out$cp.table), ncol=2, byrow=T)
   out
 }

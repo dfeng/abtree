@@ -47,22 +47,26 @@ List rcpp_BuildTree(NumericVector y, NumericMatrix x,
             0);
   // Rprintf("Done partition\n");
 
-  // DoubleMat cp_table;
+  DoubleMat cp_table;
   // if no good splits were found even for the root
-  // the skip cp_table
-  // if (root->split_col != -1) {
-  //   cp_table = TreeComplexity(root);
-  // }
+  // then skip cp_table
+  if (root->split_col != -1) {
+    cp_table = TreeComplexity(root);
+  }
 
   DoubleMat tree_df;
   ExportTree(root, tree_df);
 
-  // Free the Ents!
-  DeleteTree(root);
+  // // Free the Ents!
+  // DeleteTree(root);
+
+  // Pointer to our cpp tree struct
+  XPtr<Node> ptr(root);
 
   List ret;
-  ret["tree"] = wrap(tree_df);
-  // ret["cp.table"] = wrap(cp_table);
+  ret["cpp.tree"] = wrap(tree_df);
+  ret["cpp.tree.ptr"] = ptr;
+  ret["cp.table"] = wrap(cp_table);
   return ret;
 }
 

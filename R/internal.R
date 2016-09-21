@@ -18,3 +18,28 @@ ParseFormula <- function(formula, data) {
   x <- as.data.frame(data[,cov.names], stringsAsFactors=FALSE)
   list(y=y, x=x, trt=trt, y.name=response, trt.name=treat)
 }
+
+FormatTree <- function(obj) {
+  ntrt <- length(obj$trt.levels)
+  tree <- as.data.frame(matrix(unlist(obj$cpp.tree), ncol=(10+ntrt*2), byrow=T))
+  colnames(tree) <- c("id",
+                      "split_var", "split_value","optimal_trt",
+                      "total_Q", "complexity", "branch", "pruned",
+                      "childleft_id", "childright_id",
+                      paste(
+                        rep(c("n", "p"), times=ntrt),
+                        rep(LETTERS[1:ntrt], each=2),
+                        sep="_")
+                      )
+  tree[tree == -1] <- NA # replace -1 with NA
+  tree$split_value[is.na(tree$split_var)] <- NA
+  tree$optimal_trt <- LETTERS[tree$optimal_trt+1]
+  tree$var_type <- obj$x.types[tree$split_var+1]
+  tree$split_var <- names(obj$x.types)[tree$split_var+1]
+  tree$split_factor <- sapply(1:nrow(tree), function(i) {
+    ifelse(tree$var_type[i] == "factor",
+      obj$x.levels[[tree$split_var[i]]][tree$split_value[i]+1],
+      NA)
+  })
+  tree
+}
