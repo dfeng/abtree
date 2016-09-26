@@ -31,15 +31,22 @@ FormatTree <- function(obj) {
                         rep(LETTERS[1:ntrt], each=2),
                         sep="_")
                       )
+  # 
+  # following rpart frame output
+  # 
+  rownames(tree) <- tree$id
+  tree <- tree[,-1L]
+
   tree[tree == -1] <- NA # replace -1 with NA
   tree$split_value[is.na(tree$split_var)] <- NA
-  tree$optimal_trt <- LETTERS[tree$optimal_trt+1]
-  tree$var_type <- obj$x.types[tree$split_var+1]
-  tree$split_var <- names(obj$x.types)[tree$split_var+1]
+  tree$optimal_trt <- LETTERS[tree$optimal_trt+1L]
+  tree$var_type <- obj$x.types[tree$split_var+1L]
+  tree$split_var <- names(obj$x.types)[tree$split_var+1L]
   tree$split_factor <- sapply(1:nrow(tree), function(i) {
     ifelse(tree$var_type[i] == "factor",
-      obj$x.levels[[tree$split_var[i]]][tree$split_value[i]+1],
+      obj$x.levels[[tree$split_var[i]]][tree$split_value[i]+1L],
       NA)
   })
+  tree$split_var[is.na(tree$split_var)] <- "<leaf>"
   tree
 }

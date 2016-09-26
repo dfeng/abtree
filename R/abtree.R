@@ -32,9 +32,9 @@ abtree <- function(formula, data, min.bucket=10, min.split=30,
   y <- as.numeric(m$y)
   x <- data.matrix(m$x) # converts everything to numeric, which is what we want
                         # since the Rcpp code will take a NumericMatrix
-  x[,x.types=="factor"] <- x[,x.types=="factor"]-1 # correcting for 0-index
-  trt <- as.integer(m$trt)-1 # correcting for 0-index
-  ord <- apply(x, 2, order)-1 # correcting for 0-index
+  x[,x.types=="factor"] <- x[,x.types=="factor"]-1L # correcting for 0-index
+  trt <- as.integer(m$trt)-1L # correcting for 0-index
+  ord <- apply(x, 2, order)-1L # correcting for 0-index
   trt.levels <- levels(m$trt)
   out <- rcpp_BuildTree(y, x, trt, ord,
                         ncat, length(trt.levels),
@@ -52,7 +52,7 @@ abtree <- function(formula, data, min.bucket=10, min.split=30,
   out$ncat <- ncat
   out$y.name <- m$y.name
   out$trt.name <- m$trt.name
-  out$tree <- FormatTree(out)
+  out$frame <- FormatTree(out)
   out$cp.table <- matrix(unlist(out$cp.table), ncol=2, byrow=T)
   out
 }
