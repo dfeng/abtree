@@ -48,23 +48,18 @@ struct Node {
   bool pruned; // whether or not this non-leaf node is a pruned beginning of branch
   double branch; // which branch this node is a part of (id'd by complexity)
 
-  // POST-PRUNING
-
-  double prune_y[2];
-  int prune_n[2];
-
-  double predict_y[2];
-  int predict_n[2];
-
   Block blok;
   Block test_blok;
 
-  // bool isTerminal; // is this a leaf?
+  NumericVector prune_y;
+  IntegerVector prune_n;
+
   Node *left; // pointer to left branch
   Node *right; // right branch
 
   // Constructors
-  Node();
+  Node() {};
+  Node(int ntrt);
 
   // Helper Functions
   void print();

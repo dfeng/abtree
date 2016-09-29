@@ -27,7 +27,7 @@ abtree <- function(formula, data, min.bucket=10, min.split=30,
   if (class(m$y) == "character")
     stop("The response variable cannot be of type 'character'. Please convert to factor.")
 
-  x.levels <- sapply(m$x, function(t) levels(t))
+  x.levels <- sapply(m$x, levels)
   ncat <- sapply(x.levels, length)
   y <- as.numeric(m$y)
   x <- data.matrix(m$x) # converts everything to numeric, which is what we want
@@ -38,17 +38,15 @@ abtree <- function(formula, data, min.bucket=10, min.split=30,
   trt.levels <- levels(m$trt)
   out <- rcpp_BuildTree(y, x, trt, ord,
                         ncat, length(trt.levels),
-                        as.integer(min.bucket), # should these be here?
-                        as.integer(min.split),  # or should there
+                        as.integer(min.bucket), # should these (as.integer)
+                        as.integer(min.split),  # be here? or should they
                         as.integer(max.depth))  # be conditions?
 
   class(out) <- "abtree"
-  out$trt.levels <- trt.levels
-  # TODO: make this lapply(m$x, levels)
-  out$cat.levels <- lapply(1:ncol(m$x), function(c) levels(m$x[,c]))
   out$formula <- formula
   out$x.types <- x.types
   out$x.levels <- x.levels
+  out$trt.levels <- trt.levels
   out$ncat <- ncat
   out$y.name <- m$y.name
   out$trt.name <- m$trt.name

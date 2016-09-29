@@ -12,17 +12,23 @@ prune.abtree <- function(obj, valid.data) {
     return(obj)
 
   m <- ParseFormula(obj$formula, valid.data)
+  x.types <- vapply(m$x, class, character(1))
+  y <- as.numeric(m$y)
+  x <- data.matrix(m$x) # converts everything to numeric, which is what we want
+  x[,x.types=="factor"] <- x[,x.types=="factor"]-1L # correcting for 0-index
+  trt <- as.integer(m$trt)-1L # correcting for 0-index
 
-  if (obj$trt.levels != levels(m$trt))
+  if (any(obj$trt.levels != levels(m$trt)))
     stop("The treatment variable levels have changed!")
   if (!all.equal(obj$x.levels, sapply(m$x, function(t) levels(t))))
     stop("At least one predictor has different levels!")
 
-  out <- rcpp_Prune(cbind(matrix(unlist(obj$tree), ncol=14, byrow=T)),
-                    m$y, m$x, m$trt, obj$ncat, length(obj$trt.levels),
-                    cbind(matrix(unlist(obj$cp.table), ncol=2, byrow=T)))
+  out <- rcpp_Prune(obj$cpp.ptr,
+                    y, x, trt, obj$ncat, length(obj$trt.levels),
+                    obj$cp.table)
 
-  obj$tree <- out$tree
+  obj$cpp.tree <- out$cpp.prune.tree
+  obj$frame <- FormatTree(obj)
   obj$cp.table <- out$cp.table
   obj
 }

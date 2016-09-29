@@ -6,6 +6,6 @@
 #' @export
 #'
 summary.abtree <- function(obj) {
-  print(obj$tree)
-  invisible(obj$tree)
+  print(obj$frame)
+  invisible(obj$frame)
 }

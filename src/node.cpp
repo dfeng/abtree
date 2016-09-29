@@ -36,7 +36,7 @@ Block::Block(NumericVector y0, IntegerVector n0) {
   }
 };
 
-Node::Node() {
+Node::Node(int ntrt) {
   this->left = nullptr;
   this->right = nullptr;
   this->pruned = false;
@@ -44,10 +44,14 @@ Node::Node() {
   this->complexity = -1;
   this->split_col = -1;
   this->opt_Q = -1.0;
-  Block b;
-  this->blok = b;
-  Block t_b;
-  this->test_blok = t_b;
+  // Block b;
+  // Block t_b;
+  // this->blok = b;
+  // this->test_blok = t_b;
+  NumericVector p_y(ntrt);
+  this->prune_y = p_y;
+  IntegerVector p_n(ntrt);
+  this->prune_n = p_n;
 };
 
 void Node::print() {

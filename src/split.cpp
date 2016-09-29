@@ -130,10 +130,10 @@ void Partition(Node *splitnode,
   // splitnode->split_n = split_n;
 
   // initializing left, right branches
-  splitnode->left = new Node();
+  splitnode->left = new Node(ntrt);
   splitnode->left->blok = opt_left;
   // Rprintf("left: opt_Q %0.2f opt_trt %d\n", opt_left.opt_Q, opt_left.opt_trt);
-  splitnode->right = new Node();
+  splitnode->right = new Node(ntrt);
   splitnode->right->blok = opt_right;
   // Rprintf("right: opt_Q %0.2f opt_trt %d\n", opt_right.opt_Q, opt_right.opt_trt);
 

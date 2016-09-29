@@ -35,7 +35,7 @@ List rcpp_BuildTree(NumericVector y, NumericMatrix x,
   }
   Block b(root_y, root_n);
 
-  Node *root = new Node();
+  Node *root = new Node(ntrt);
   root->blok = b;
 
   // Rprintf("Time to partition\n");
@@ -57,54 +57,47 @@ List rcpp_BuildTree(NumericVector y, NumericMatrix x,
   DoubleMat tree_df;
   ExportTree(root, tree_df);
 
-  // // Free the Ents!
-  // DeleteTree(root);
-
   // Pointer to our cpp tree struct
-  XPtr<Node, PreserveStorage, DeleteTree> ptr(root, true);
+  XPtr<Node, PreserveStorage, DeleteTree> xptr(root, true);
 
   List ret;
   ret["cpp.tree"] = wrap(tree_df);
-  ret["cpp.tree.ptr"] = ptr;
+  ret["cpp.ptr"] = xptr;
   ret["cp.table"] = wrap(cp_table);
   return ret;
 }
 
-// // [[Rcpp::export]]
-// List rcpp_Prune(NumericMatrix tree_df,
-//                 NumericVector valid_y, NumericMatrix valid_x,
-//                 IntegerVector valid_trt, IntegerVector ncat,
-//                 int ntrt, NumericMatrix cp_tbl) {
-//   Node *root = ImportTree(tree_df, ntrt);
-//   DoubleMat cp_table = NumToDoubleMat(cp_tbl);
+// [[Rcpp::export]]
+List rcpp_Prune(SEXP xptr,
+                NumericVector valid_y, NumericMatrix valid_x,
+                IntegerVector valid_trt, IntegerVector ncat,
+                int ntrt, NumericMatrix cp_table) {
 
-//   PredictPrune(root, valid_y, valid_x, valid_trt, ncat, cp_table);
+  XPtr<Node, PreserveStorage, DeleteTree> root(xptr); // recover root
 
-//   // find maximum cp_value
-//   double argmax_cp;
-//   double max_profit = -DBL_MAX;
-//   for (int i = 0; i < cp_table.size(); i++) {
-//     if (cp_table[i][1] >= max_profit) {
-//       max_profit = cp_table[i][1];
-//       argmax_cp = cp_table[i][0];
-//     }
-//   }
-//   // Rprintf("argmax_cp %0.5f\n", argmax_cp);
-//   // Rprintf("max_profit %0.5f\n", max_profit);
-//   PruneTree(root, argmax_cp);
+  PredictPrune(root, valid_y, valid_x, valid_trt, ncat, cp_table);
 
-//   DoubleMat new_tree_df;
-//   ExportTree(root, new_tree_df);
-//   // return wrap(new_tree_df);
+  // find maximum cp_value
+  double argmax_cp;
+  double max_profit = -DBL_MAX;
+  for (int i = 0; i < cp_table.nrow(); i++) {
+    if (cp_table(i,1) >= max_profit) {
+      max_profit = cp_table(i,1);
+      argmax_cp = cp_table(i,0);
+    }
+  }
+  Rcout << "argmax_cp" << argmax_cp << std::endl;
+  Rcout << "max_profit " << max_profit << std::endl;
+  PruneTree(root, argmax_cp);
 
-//   // Free the Ents!
-//   DeleteTree(root);
+  DoubleMat new_tree_df;
+  ExportTree(root, new_tree_df);
 
-//   List z;
-//   z["tree"] = wrap(new_tree_df);
-//   z["cp.table"] = wrap(cp_table);
-//   return z;
-// }
+  List z;
+  z["cpp.prune.tree"] = wrap(new_tree_df);
+  z["cp.table"] = cp_table;
+  return z;
+}
 
 // // [[Rcpp::export]]
 // List rcpp_Predict(NumericMatrix tree, std::vector<double> y,

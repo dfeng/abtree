@@ -5,3 +5,7 @@ rcpp_BuildTree <- function(y, x, trt, ordering, ncat, ntrt, min_bucket, min_spli
     .Call('abtree_rcpp_BuildTree', PACKAGE = 'abtree', y, x, trt, ordering, ncat, ntrt, min_bucket, min_split, max_depth)
 }
 
+rcpp_Prune <- function(xptr, valid_y, valid_x, valid_trt, ncat, ntrt, cp_table) {
+    .Call('abtree_rcpp_Prune', PACKAGE = 'abtree', xptr, valid_y, valid_x, valid_trt, ncat, ntrt, cp_table)
+}
+

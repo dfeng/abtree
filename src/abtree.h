@@ -12,7 +12,6 @@ using namespace Rcpp;
 
 // ========================  Split  ========================  // 
 
-
 void Partition(Node *splitnode,
                const NumericVector &y, const NumericMatrix &x,
                const IntegerVector &trt, IntegerMatrix &ordering,
@@ -39,7 +38,6 @@ bool BestSplitCat(const NumericVector &y, const NumericVector &x,
 
 // ========================  Reorder  ========================  // 
 
-
 void Reorder(int split_col, int ncol,
              int split_n,
              int start, int end,
@@ -54,12 +52,12 @@ void SetBranch(Node *node, double branch);
 
 // ========================  Prune  ========================  // 
 
+void PredictPrune(Node *root,
+                  const NumericVector &y, const NumericMatrix &x,
+                  const IntegerVector &trt, IntegerVector &ncat,
+                  NumericMatrix &cp_table);
 
-void PredictPrune(Node *root, const DoubleVec &y, const DoubleMat &x,
-                  const IntVec &trt, IntVec &ncat,
-                  DoubleMat &cp_table);
-void FillComplexity(Node *node, DoubleMat &cp_table);
-// void PredictPrune2(Node *root, const DoubleVec &y, const DoubleMat &x, const IntVec &trt, IntVec &ncat, DoubleMat &cp_table);
+void FillComplexity(Node *node, NumericMatrix &cp_table);
 void PruneTree(Node *root, double complexity);
 void TruncateNode(Node *node);
 
@@ -71,9 +69,8 @@ int NodeToRow(Node *node, DoubleMat &tree_df, int id);
 Node * ImportTree(NumericMatrix &tree_df, int ntrt);
 void RowToNode(Node *parent, NumericMatrix &tree_df, int row, int ntrt);
 
-DoubleMat NumToDoubleMat(NumericMatrix m);
+// ========================  Predict  ========================  // 
 
-// predict
 // Node * PredictNode(Node *node, NumericMatrix::Row xrow, IntVec &ncat);
 // IntegerVector Predict(Node *root, const DoubleVec &y, NumericMatrix x,
 //              const IntVec &trt, IntVec &ncat);
