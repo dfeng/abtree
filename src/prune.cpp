@@ -10,7 +10,6 @@ void PredictPrune(Node *root,
                   const IntegerVector &trt, IntegerVector &ncat,
                   NumericMatrix &cp_table) {
   int n = cp_table.nrow();
-  // std::map<int, double> cp_values;
 
   // looping through every data point
   for (int j = 0; j < x.nrow(); j++) {

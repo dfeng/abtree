@@ -71,7 +71,7 @@ List rcpp_BuildTree(NumericVector y, NumericMatrix x,
 List rcpp_Prune(SEXP xptr,
                 NumericVector valid_y, NumericMatrix valid_x,
                 IntegerVector valid_trt, IntegerVector ncat,
-                int ntrt, NumericMatrix cp_table) {
+                NumericMatrix cp_table) {
 
   XPtr<Node, PreserveStorage, DeleteTree> root(xptr); // recover root
 
@@ -86,8 +86,8 @@ List rcpp_Prune(SEXP xptr,
       argmax_cp = cp_table(i,0);
     }
   }
-  Rcout << "argmax_cp" << argmax_cp << std::endl;
-  Rcout << "max_profit " << max_profit << std::endl;
+  // Rcout << "argmax_cp" << argmax_cp << std::endl;
+  // Rcout << "max_profit " << max_profit << std::endl;
   PruneTree(root, argmax_cp);
 
   DoubleMat new_tree_df;
@@ -100,18 +100,17 @@ List rcpp_Prune(SEXP xptr,
 }
 
 // [[Rcpp::export]]
-List rcpp_Predict(NumericMatrix tree, std::vector<double> y,
-                  NumericMatrix x, std::vector<int> trt,
-                  std::vector<int> ncat) {
-  Node * root = ImportTree(tree);
+List rcpp_Predict(SEXP xptr,
+                  NumericVector test_y, NumericMatrix test_x,
+                  IntegerVector test_trt, IntegerVector ncat) {
+  XPtr<Node, PreserveStorage, DeleteTree> root(xptr); // recover root
+  IntegerVector pred_trt = Predict(root, test_y, test_x, test_trt, ncat);
 
-  IntegerVector pred_trt = Predict(root, y, x, trt, ncat);
-
-  DoubleMat testtree_df;
-  ExportTree(root, testtree_df, TRUE);
+  DoubleMat test_tree_df;
+  ExportTree(root, test_tree_df);
 
   List z;
-  z["test"] = wrap(testtree_df);
-  z["trt"] = wrap(pred_trt);
+  z["test"] = wrap(test_tree_df);
+  z["predict.trt"] = wrap(pred_trt);
   return z;
 }

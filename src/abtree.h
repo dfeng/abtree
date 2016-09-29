@@ -66,14 +66,15 @@ void TruncateNode(Node *node);
 void DeleteTree(Node *node);
 void ExportTree(Node *node, DoubleMat &tree_df);
 int NodeToRow(Node *node, DoubleMat &tree_df, int id);
-Node * ImportTree(NumericMatrix &tree_df, int ntrt);
-void RowToNode(Node *parent, NumericMatrix &tree_df, int row, int ntrt);
 
 // ========================  Predict  ========================  // 
 
-// Node * PredictNode(Node *node, NumericMatrix::Row xrow, IntVec &ncat);
-// IntegerVector Predict(Node *root, const DoubleVec &y, NumericMatrix x,
-//              const IntVec &trt, IntVec &ncat);
-// void FillTest(Node *root);
+IntegerVector Predict(Node *root,
+                      const NumericVector &y, const NumericMatrix x,
+                      const IntegerVector &trt, const IntegerVector &ncat);
+Node * PredictNode(Node *node,
+                   const NumericVector &xrow,
+                   const IntegerVector &ncat);
+void FillTest(Node *node);
 
 #endif

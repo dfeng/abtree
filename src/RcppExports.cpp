@@ -25,8 +25,8 @@ BEGIN_RCPP
 END_RCPP
 }
 // rcpp_Prune
-List rcpp_Prune(SEXP xptr, NumericVector valid_y, NumericMatrix valid_x, IntegerVector valid_trt, IntegerVector ncat, int ntrt, NumericMatrix cp_table);
-RcppExport SEXP abtree_rcpp_Prune(SEXP xptrSEXP, SEXP valid_ySEXP, SEXP valid_xSEXP, SEXP valid_trtSEXP, SEXP ncatSEXP, SEXP ntrtSEXP, SEXP cp_tableSEXP) {
+List rcpp_Prune(SEXP xptr, NumericVector valid_y, NumericMatrix valid_x, IntegerVector valid_trt, IntegerVector ncat, NumericMatrix cp_table);
+RcppExport SEXP abtree_rcpp_Prune(SEXP xptrSEXP, SEXP valid_ySEXP, SEXP valid_xSEXP, SEXP valid_trtSEXP, SEXP ncatSEXP, SEXP cp_tableSEXP) {
 BEGIN_RCPP
     Rcpp::RObject __result;
     Rcpp::RNGScope __rngScope;
@@ -35,9 +35,23 @@ BEGIN_RCPP
     Rcpp::traits::input_parameter< NumericMatrix >::type valid_x(valid_xSEXP);
     Rcpp::traits::input_parameter< IntegerVector >::type valid_trt(valid_trtSEXP);
     Rcpp::traits::input_parameter< IntegerVector >::type ncat(ncatSEXP);
-    Rcpp::traits::input_parameter< int >::type ntrt(ntrtSEXP);
     Rcpp::traits::input_parameter< NumericMatrix >::type cp_table(cp_tableSEXP);
-    __result = Rcpp::wrap(rcpp_Prune(xptr, valid_y, valid_x, valid_trt, ncat, ntrt, cp_table));
+    __result = Rcpp::wrap(rcpp_Prune(xptr, valid_y, valid_x, valid_trt, ncat, cp_table));
+    return __result;
+END_RCPP
+}
+// rcpp_Predict
+List rcpp_Predict(SEXP xptr, NumericVector test_y, NumericMatrix test_x, IntegerVector test_trt, IntegerVector ncat);
+RcppExport SEXP abtree_rcpp_Predict(SEXP xptrSEXP, SEXP test_ySEXP, SEXP test_xSEXP, SEXP test_trtSEXP, SEXP ncatSEXP) {
+BEGIN_RCPP
+    Rcpp::RObject __result;
+    Rcpp::RNGScope __rngScope;
+    Rcpp::traits::input_parameter< SEXP >::type xptr(xptrSEXP);
+    Rcpp::traits::input_parameter< NumericVector >::type test_y(test_ySEXP);
+    Rcpp::traits::input_parameter< NumericMatrix >::type test_x(test_xSEXP);
+    Rcpp::traits::input_parameter< IntegerVector >::type test_trt(test_trtSEXP);
+    Rcpp::traits::input_parameter< IntegerVector >::type ncat(ncatSEXP);
+    __result = Rcpp::wrap(rcpp_Predict(xptr, test_y, test_x, test_trt, ncat));
     return __result;
 END_RCPP
 }

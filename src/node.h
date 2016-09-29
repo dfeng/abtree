@@ -53,6 +53,8 @@ struct Node {
 
   NumericVector prune_y;
   IntegerVector prune_n;
+  NumericVector predict_y;
+  IntegerVector predict_n;
 
   Node *left; // pointer to left branch
   Node *right; // right branch

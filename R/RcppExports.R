@@ -5,7 +5,11 @@ rcpp_BuildTree <- function(y, x, trt, ordering, ncat, ntrt, min_bucket, min_spli
     .Call('abtree_rcpp_BuildTree', PACKAGE = 'abtree', y, x, trt, ordering, ncat, ntrt, min_bucket, min_split, max_depth)
 }
 
-rcpp_Prune <- function(xptr, valid_y, valid_x, valid_trt, ncat, ntrt, cp_table) {
-    .Call('abtree_rcpp_Prune', PACKAGE = 'abtree', xptr, valid_y, valid_x, valid_trt, ncat, ntrt, cp_table)
+rcpp_Prune <- function(xptr, valid_y, valid_x, valid_trt, ncat, cp_table) {
+    .Call('abtree_rcpp_Prune', PACKAGE = 'abtree', xptr, valid_y, valid_x, valid_trt, ncat, cp_table)
+}
+
+rcpp_Predict <- function(xptr, test_y, test_x, test_trt, ncat) {
+    .Call('abtree_rcpp_Predict', PACKAGE = 'abtree', xptr, test_y, test_x, test_trt, ncat)
 }
 

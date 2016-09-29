@@ -1,6 +1,6 @@
 #' prune.abtree
 #'
-#' @param object an object of class 'abtree' returned by MakeTree
+#' @param obj an object of class 'abtree' returned by MakeTree
 #' @param valid.data a new data frame containing the variables used in MakeTree
 #'
 #' @return a pruned tree (object of class 'abtree')
@@ -24,8 +24,7 @@ prune.abtree <- function(obj, valid.data) {
     stop("At least one predictor has different levels!")
 
   out <- rcpp_Prune(obj$cpp.ptr,
-                    y, x, trt, obj$ncat, length(obj$trt.levels),
-                    obj$cp.table)
+                    y, x, trt, obj$ncat, obj$cp.table)
 
   obj$cpp.tree <- out$cpp.prune.tree
   obj$frame <- FormatTree(obj)

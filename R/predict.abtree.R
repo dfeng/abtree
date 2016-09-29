@@ -1,30 +1,26 @@
 #' predict.abtree
 #'
-#' @param object an object of class 'abtree' returned by MakeTree
-#' @param newdata a new data frame containing the variables used in MakeTree
+#' @param obj an object of class 'abtree' returned by MakeTree
+#' @param new.data a new data frame containing the variables used in MakeTree
 #'
 #' @return a vector of predicted optimal treatments for all of the observations
 #' @export
 #'
-predict.abtree <- function(object, newdata) {
+predict.abtree <- function(obj, new.data) {
 
-  data <- ParseFormula(object$formula, newdata)
-  data$trt <- TreatToAB(data$trt, object$treatment)
+  m <- ParseFormula(obj$formula, new.data)
+  x.types <- vapply(m$x, class, character(1))
+  y <- as.numeric(m$y)
+  x <- data.matrix(m$x) # converts everything to numeric, which is what we want
+  x[,x.types=="factor"] <- x[,x.types=="factor"]-1L # correcting for 0-index
+  trt <- as.integer(m$trt)-1L # correcting for 0-index
+  ord <- apply(x, 2, order)-1L # correcting for 0-index
+  out <- rcpp_Predict(obj$cpp.ptr,
+                      y, x, trt, obj$ncat)
 
-  x <- data.matrix(data$x)
-  for (j in which(object$var.types[1,]>=1)) {
-    x[,j] <- as.numeric(x[,j]-1)
-  }
-
-  # figure out ordering
-  ord <- apply(x, 2, order)-1
-  out <- rcpp_Predict(cbind(matrix(unlist(object$tree), ncol=14, byrow=T)),
-                      data$y, x, data$trt, as.integer(object$var.types[2,]))
-
-  z <- LETTERS[out$trt+1]
-  # DF: I forget what this table is, but I'm going to comment it out for now
-  # attr(z, "table") <- matrix(unlist(out$test), ncol=18, byrow=T)[,15:18]
-  return(z)
+  preds <- LETTERS[out$predict.trt+1L]
+  # attr(preds, "table") <- matrix(unlist(out$test), ncol=18, byrow=T)[,15:18]
+  preds
 }
 
 

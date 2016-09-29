@@ -19,6 +19,8 @@ ParseFormula <- function(formula, data) {
   list(y=y, x=x, trt=trt, y.name=response, trt.name=treat)
 }
 
+# TODO: make the columns actually data.frames inside a data.frame,
+#       like how rpart does
 FormatTree <- function(obj) {
   ntrt <- length(obj$trt.levels)
   tree <- as.data.frame(matrix(unlist(obj$cpp.tree), ncol=(10+ntrt*2), byrow=T))

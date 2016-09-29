@@ -52,6 +52,10 @@ Node::Node(int ntrt) {
   this->prune_y = p_y;
   IntegerVector p_n(ntrt);
   this->prune_n = p_n;
+  NumericVector r_y(ntrt);
+  this->predict_y = r_y;
+  IntegerVector r_n(ntrt);
+  this->predict_n = r_n;
 };
 
 void Node::print() {
