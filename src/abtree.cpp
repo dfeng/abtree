@@ -99,19 +99,19 @@ List rcpp_Prune(SEXP xptr,
   return z;
 }
 
-// // [[Rcpp::export]]
-// List rcpp_Predict(NumericMatrix tree, std::vector<double> y,
-//                   NumericMatrix x, std::vector<int> trt,
-//                   std::vector<int> ncat) {
-//   Node * root = ImportTree(tree);
+// [[Rcpp::export]]
+List rcpp_Predict(NumericMatrix tree, std::vector<double> y,
+                  NumericMatrix x, std::vector<int> trt,
+                  std::vector<int> ncat) {
+  Node * root = ImportTree(tree);
 
-//   IntegerVector pred_trt = Predict(root, y, x, trt, ncat);
+  IntegerVector pred_trt = Predict(root, y, x, trt, ncat);
 
-//   DoubleMat testtree_df;
-//   ExportTree(root, testtree_df, TRUE);
+  DoubleMat testtree_df;
+  ExportTree(root, testtree_df, TRUE);
 
-//   List z;
-//   z["test"] = wrap(testtree_df);
-//   z["trt"] = wrap(pred_trt);
-//   return z;
-// }
+  List z;
+  z["test"] = wrap(testtree_df);
+  z["trt"] = wrap(pred_trt);
+  return z;
+}
