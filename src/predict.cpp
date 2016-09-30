@@ -16,6 +16,7 @@ IntegerVector Predict(Node *root,
     leaf->predict_n[trt[i]]++;
   }
   // for each leaf
+  // TODO: remind myself what this is for?
   FillTest(root);
   return pred_trt;
 }

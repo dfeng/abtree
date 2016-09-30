@@ -7,7 +7,6 @@
 #' @export
 #'
 predict.abtree <- function(obj, new.data) {
-
   m <- ParseFormula(obj$formula, new.data)
   x.types <- vapply(m$x, class, character(1))
   y <- as.numeric(m$y)
@@ -17,10 +16,7 @@ predict.abtree <- function(obj, new.data) {
   ord <- apply(x, 2, order)-1L # correcting for 0-index
   out <- rcpp_Predict(obj$cpp.ptr,
                       y, x, trt, obj$ncat)
-
   preds <- LETTERS[out$predict.trt+1L]
   # attr(preds, "table") <- matrix(unlist(out$test), ncol=18, byrow=T)[,15:18]
   preds
 }
-
-

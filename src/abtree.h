@@ -28,7 +28,7 @@ bool BestSplitNum(const NumericVector &y, const NumericVector &x,
                   double &split_tau, int &split_n);
 
 bool BestSplitCat(const NumericVector &y, const NumericVector &x,
-                  const IntegerVector &trt, const IntegerVector &ordering, 
+                  const IntegerVector &trt, const IntegerVector &ordering,
                   int ntrt, int K,
                   int start, int end,
                   int min_bucket, int min_split,

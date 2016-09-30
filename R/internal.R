@@ -37,7 +37,7 @@ FormatTree <- function(obj) {
   # following rpart frame output
   # 
   rownames(tree) <- tree$id
-  tree <- tree[,-1L]
+  tree <- tree[,-1]
 
   tree[tree == -1] <- NA # replace -1 with NA
   tree$split_value[is.na(tree$split_var)] <- NA
