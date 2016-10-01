@@ -14,7 +14,7 @@
 #' }
 plot.abtree <- function (obj, margin = 0, digits=3, scientific=FALSE, ...)
 {
-  tree <- FormatTree(obj, child_id=TRUE, digits=digits, scientific=scientific)
+  tree <- FormatTree(obj)#, child_id=TRUE, digits=digits, scientific=scientific)
   if (nrow(tree) <= 1L)
     stop("A tree with just a root; nothing to plot.")
 
@@ -29,7 +29,11 @@ plot.abtree <- function (obj, margin = 0, digits=3, scientific=FALSE, ...)
   temp <- abtree.branch(xx, yy, node, 1)
   text(xx[1L], yy[1L], "|")
   lines(c(temp$x), c(temp$y))
-
+  
+  ## adhoc changes 
+  trts <- LETTERS[1:length(obj$trt.levels)]
+  binaryY <- all(tree$p_A < 1) # so crude!
+  
   # write text
   n_leaves <- sum(tree$split_Var == "<leaf>")
   n_parents <- nrow(tree)-n_leaves
@@ -38,11 +42,15 @@ plot.abtree <- function (obj, margin = 0, digits=3, scientific=FALSE, ...)
   i <- 1
   for (j in 1:nrow(tree)) {
     if (tree$split_var[j] == "<leaf>") {
-      label[i] <- paste0(tree$optimal_trt[j],"\n A: ",
-                      round(100*tree$p_A[j],2),
-                      "%\n (", tree$n_A[j], ")\n B: ",
-                      round(100*tree$p_B[j], 2),
-                      "%\n (", tree$n_B[j], ")")
+      label[i] <- formatLeaf(tree$optimal_trt[j], 
+                             tree[j, 10:(10+2*length(obj$trt.levels)-1)], 
+                             binaryY, digits)
+      
+      # label[i] <- paste0(tree$optimal_trt[j],"\n A: ",
+      #                 round(100*tree$p_A[j],2),
+      #                 "%\n (", tree$n_A[j], ")\n B: ",
+      #                 round(100*tree$p_B[j], 2),
+      #                 "%\n (", tree$n_B[j], ")")
       xvals[i] <- xx[j]
       yvals[i] <- yy[j]
     } else {
@@ -167,4 +175,24 @@ tree.depth <- function (nodes)
 {
   depth <- floor(log(nodes, base = 2) + 1e-07)
   depth - min(depth)
+}
+
+formatLeaf <- function(opt_trt, x, binary=TRUE, ndigits=2) {
+  ret <- opt_trt
+  ntrt <- length(x)/2
+  
+  for (i in 1:ntrt) {
+    pcount <- i+ntrt
+    if(binary) {
+      ret <- c(ret, paste0(LETTERS[i],": ",
+             round(100*x[pcount], ndigits),
+             "%\n (", x[i], ")"))
+    } else {
+      ret <- c(ret, paste0(LETTERS[i],": ",
+                           round(x[pcount], ndigits),
+                           "\n (", x[i], ")"))
+    }
+  }
+  return(paste(ret, collapse="\n"))
+  
 }

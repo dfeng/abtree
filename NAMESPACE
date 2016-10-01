@@ -8,6 +8,7 @@ S3method(summary,abtree)
 export(abtree)
 export(forest)
 export(pforest)
+#export(plot.abtree) # testing only
 exportClasses(abtree)
 importFrom(Rcpp,evalCpp)
 importFrom(rpart,prune)
