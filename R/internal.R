@@ -29,8 +29,8 @@ FormatTree <- function(obj) {
                       "total_Q", "complexity", "branch", "pruned",
                       "childleft_id", "childright_id",
                       paste(
-                        rep(c("n", "p"), times=ntrt),
-                        rep(LETTERS[1:ntrt], each=2),
+                        rep(c("y", "n"), each=ntrt),
+                        rep(LETTERS[1:ntrt], times=2),
                         sep="_")
                       )
   # 
