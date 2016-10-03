@@ -12,7 +12,8 @@
 #' tree <- MakeTree(y ~ grp | hour + browser, data=x)
 #' plot(tree)
 #' }
-plot.abtree <- function (obj, margin = 0, digits=3, scientific=FALSE, ...)
+plot.abtree <- function (obj, margin = 0, digits=3, scientific=FALSE, binaryY = FALSE,
+                         ...)
 {
   tree <- FormatTree(obj)#, child_id=TRUE, digits=digits, scientific=scientific)
   if (nrow(tree) <= 1L)
@@ -29,10 +30,6 @@ plot.abtree <- function (obj, margin = 0, digits=3, scientific=FALSE, ...)
   temp <- abtree.branch(xx, yy, node, 1)
   text(xx[1L], yy[1L], "|")
   lines(c(temp$x), c(temp$y))
-  
-  ## adhoc changes 
-  trts <- LETTERS[1:length(obj$trt.levels)]
-  binaryY <- all(tree$p_A < 1) # so crude!
   
   # write text
   n_leaves <- sum(tree$split_Var == "<leaf>")
@@ -185,12 +182,12 @@ formatLeaf <- function(opt_trt, x, binary=TRUE, ndigits=2) {
     pcount <- i+ntrt
     if(binary) {
       ret <- c(ret, paste0(LETTERS[i],": ",
-             round(100*x[pcount], ndigits),
-             "%\n (", x[i], ")"))
+             round(100*x[i]/x[pcount], ndigits),
+             "%\n (", x[pcount], ")"))
     } else {
       ret <- c(ret, paste0(LETTERS[i],": ",
-                           round(x[pcount], ndigits),
-                           "\n (", x[i], ")"))
+                           round(x[i]/x[pcount], ndigits),
+                           "\n (", x[pcount], ")"))
     }
   }
   return(paste(ret, collapse="\n"))
