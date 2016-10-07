@@ -59,15 +59,15 @@ plot.abtree <- function (obj, margin = 0, digits=3, scientific=FALSE, binaryY = 
       yvals[i] <- ifelse(j==1, yy[j], (yy[j]+yy[parentid])*0.5)
       pos[i] <- 3
       i <- i + 1
-      label[i] <- ifelse(tree$var_type[j] == 1,
-                      paste0(tree$split_value[j]),
+      label[i] <- ifelse(tree$var_type[j] == "factor",
+                      paste0(tree$split_factor[j]),
                       paste0("<=", tree$split_value[j]))
       xvals[i] <- xx[tree$childleft_id[j]] + 0.5*(xx[j]-xx[tree$childleft_id[j]])
       yvals[i] <- yy[j]
       pos[i] <- 3
       i <- i + 1
-      label[i] <- ifelse(tree$var_type[j] == 1,
-                         paste0("!=", tree$split_value[j]),
+      label[i] <- ifelse(tree$var_type[j] == "factor",
+                         paste0("!=", tree$split_factor[j]),
                          paste0(">", tree$split_value[j]))
       xvals[i] <- xx[j] + 0.5*(xx[j]-xx[tree$childleft_id[j]])
       yvals[i] <- yy[j]
