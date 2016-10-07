@@ -42,12 +42,6 @@ plot.abtree <- function (obj, margin = 0, digits=3, scientific=FALSE, binaryY = 
       label[i] <- formatLeaf(tree$optimal_trt[j], 
                              tree[j, 10:(10+2*length(obj$trt.levels)-1)], 
                              binaryY, digits)
-      
-      # label[i] <- paste0(tree$optimal_trt[j],"\n A: ",
-      #                 round(100*tree$p_A[j],2),
-      #                 "%\n (", tree$n_A[j], ")\n B: ",
-      #                 round(100*tree$p_B[j], 2),
-      #                 "%\n (", tree$n_B[j], ")")
       xvals[i] <- xx[j]
       yvals[i] <- yy[j]
     } else {
@@ -61,14 +55,14 @@ plot.abtree <- function (obj, margin = 0, digits=3, scientific=FALSE, binaryY = 
       i <- i + 1
       label[i] <- ifelse(tree$var_type[j] == "factor",
                       paste0(tree$split_factor[j]),
-                      paste0("<=", tree$split_value[j]))
+                      paste0("<=", round(tree$split_value[j], digits=digits)))
       xvals[i] <- xx[tree$childleft_id[j]] + 0.5*(xx[j]-xx[tree$childleft_id[j]])
       yvals[i] <- yy[j]
       pos[i] <- 3
       i <- i + 1
       label[i] <- ifelse(tree$var_type[j] == "factor",
                          paste0("!=", tree$split_factor[j]),
-                         paste0(">", tree$split_value[j]))
+                         paste0(">", round(tree$split_value[j], digits=digits)))
       xvals[i] <- xx[j] + 0.5*(xx[j]-xx[tree$childleft_id[j]])
       yvals[i] <- yy[j]
       pos[i] <- 3
