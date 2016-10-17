@@ -86,7 +86,7 @@ void PruneTree(Node *node, double complexity) {
   if (node->pruned) {
     // Rprintf("node %d comp %0.2f\n", node->id+1, node->complexity);
     if (node->complexity <= complexity) {
-      Rcout << "truncating" << std::endl;
+      // Rcout << "truncating" << std::endl;
       TruncateNode(node);
       return;
     }

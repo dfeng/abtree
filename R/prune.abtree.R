@@ -12,6 +12,10 @@ prune.abtree <- function(obj, valid.data) {
     return(obj)
 
   m <- ParseFormula(obj$formula, valid.data)
+  if(any(is.na(m$x))) {
+    m$x <- na.omit(m$x)
+    warning("Missing values found in predictors. Rows containing missing values have been discarded.")
+  }
   x.types <- vapply(m$x, class, character(1))
   y <- as.numeric(m$y)
   x <- data.matrix(m$x) # converts everything to numeric, which is what we want

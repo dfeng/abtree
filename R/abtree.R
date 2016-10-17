@@ -16,6 +16,10 @@
 abtree <- function(formula, data, min.bucket=10, min.split=30,
                      max.depth=5) {
   m <- ParseFormula(formula, data)
+  if(any(is.na(m$x))) {
+    m$x <- na.omit(m$x)
+    warning("Missing values found in predictors. Rows containing missing values have been discarded.")
+  }
   x.types <- vapply(m$x, class, character(1))
 
   # ========================  Conditions  ========================  # 
