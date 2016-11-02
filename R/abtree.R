@@ -70,13 +70,13 @@ abtree <- function(formula, data, min.bucket=10, min.split=30,
     stop("The response variable cannot be of type 'character'. Please convert to factor.")
 
   x.levels <- sapply(m$x, levels)
-  ncat <- sapply(x.levels, length)
-  y <- as.numeric(m$y)
-  x <- data.matrix(m$x) # converts everything to numeric, which is what we want
-                        # since the Rcpp code will take a NumericMatrix
-  x[,x.types=="factor"] <- x[,x.types=="factor"]-1L # correcting for 0-index
-  trt <- as.integer(m$trt)-1L # correcting for 0-index
-  ord <- apply(x, 2, order)-1L # correcting for 0-index
+  ncat     <- sapply(x.levels, length)
+  y        <- as.numeric(m$y)
+  x        <- data.matrix(m$x) # converts everything to numeric, which is what we want
+                               # since the Rcpp code will take a NumericMatrix
+  x[,x.types == "factor"] <- x[,x.types == "factor"] - 1L # correcting for 0-index
+  trt        <- as.integer(m$trt) - 1L # correcting for 0-index
+  ord        <- apply(x, 2, order) - 1L # correcting for 0-index
   trt.levels <- levels(m$trt)
   out <- rcpp_BuildTree(y, x, trt, ord,
                         ncat, length(trt.levels),
@@ -84,15 +84,15 @@ abtree <- function(formula, data, min.bucket=10, min.split=30,
                         as.integer(min.split),  # be here? or should they
                         as.integer(max.depth))  # be conditions?
 
-  class(out) <- "abtree"
-  out$formula <- formula
-  out$x.types <- x.types
-  out$x.levels <- x.levels
+  class(out)     <- "abtree"
+  out$formula    <- formula
+  out$x.types    <- x.types
+  out$x.levels   <- x.levels
   out$trt.levels <- trt.levels
-  out$ncat <- ncat
-  out$y.name <- m$y.name
-  out$trt.name <- m$trt.name
-  out$frame <- FormatTree(out)
-  out$cp.table <- matrix(unlist(out$cp.table), ncol=2, byrow=T)
+  out$ncat       <- ncat
+  out$y.name     <- m$y.name
+  out$trt.name   <- m$trt.name
+  out$frame      <- FormatTree(out)
+  out$cp.table   <- matrix(unlist(out$cp.table), ncol=2, byrow=T)
   out
 }

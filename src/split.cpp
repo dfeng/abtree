@@ -1,4 +1,5 @@
 #include <Rcpp.h>
+// #include <Rcpp/Benchmark/Timer.h>
 #include <float.h> // DBL_MAX
 
 #include "node.h"
@@ -27,8 +28,6 @@ void Partition(Node *splitnode,
                int ncol, int start, int end,
                int min_bucket, int min_split, int max_depth,
                int level) {
-  // Rprintf("Entering Partition\n");
-  // Rprintf("start/end %d %d\n", start, end);
   int split_col, split_n;
   int split_first, split_last; // first and last for categorical
   int split_type; // optimal split type (ncat)
@@ -36,6 +35,8 @@ void Partition(Node *splitnode,
   double opt_Q = splitnode->blok.opt_Q; // Do better than parents!! aka Chinese Motto
   Block opt_left, opt_right;
   double split_tau;
+
+  // Timer timer;
 
   if (level == max_depth)
     return;
@@ -46,7 +47,6 @@ void Partition(Node *splitnode,
     int current_split_n = -1;
     int current_split_first = -1, current_split_last = -1;
     Block current_left, current_right;
-    // Rprintf("split on col %d\n", i);
     if (ncat[i] == 0) {
       if (!BestSplitNum(y, x(_,i), trt, ordering(_,i), ntrt,
                         start, end, min_bucket, min_split,
@@ -82,7 +82,9 @@ void Partition(Node *splitnode,
       }
     }
   }
-  // Rprintf("finished loop for possible splits\n");
+
+  // timer.step("loop");
+
   // if every attempted split returned false
   // which should happen when min_bucket/min_split fails every time
   if (opt_Q == splitnode->blok.opt_Q) {
@@ -90,11 +92,8 @@ void Partition(Node *splitnode,
     // Rprintf("but we didn't find anything good\n");
     return;
   }
-  // Rprintf("And we found good stuff\n");
-  // Rprintf("split_col %d split_tau %0.2f start %d end %d\n",
-  //         split_col, split_tau, start, end);
+
   if (split_type > 0) { // categorical
-    // Rcpp::Rcout << "ordering" << std::endl << ordering << std::endl;
     int tempvec[end - start];
     for (int i = 0; i < split_last - split_first; i++) {
       tempvec[i] = ordering(split_first + i, split_col);
@@ -106,16 +105,21 @@ void Partition(Node *splitnode,
       tempvec[split_last - start + i] = ordering(split_last + i, split_col);
     }
     for (int i = 0; i < end - start; i++) {
-      ordering(start + i,split_col) = tempvec[i];
+      ordering(start + i, split_col) = tempvec[i];
     }
     split_n = start + split_last - split_first;
   }
 
-  // Rcpp::Rcout << "ordering" << std::endl << ordering << std::endl;
-  // Reorder the ordering matrix
-  // Rprintf("ORDERING START");
-  // Rcpp::Rcout << "split_col " << split_col << " ncol " << ncol << " split_n " << split_n << " start " << start << " end " << end << std::endl;
-  Reorder(split_col, ncol, split_n, start, end, ordering);
+  // timer.step("reorder1");
+
+  // construct a 'lookup' table to determine which rows are going left or right
+  bool which[y.size()];
+  std::fill_n(which, y.size(), 0);
+  for (int i = start; i < split_n; i++) {
+    which[ordering(i, split_col)] = true;
+  }
+
+  Reorder(split_col, ncol, split_n, start, end, ordering, which);
   // Rcpp::Rcout << "ordering" << std::endl << ordering << std::endl;
   // Rprintf("ORDERING STOP");
 
@@ -137,6 +141,13 @@ void Partition(Node *splitnode,
   splitnode->right->blok = opt_right;
   // Rprintf("right: opt_Q %0.2f opt_trt %d\n", opt_right.opt_Q, opt_right.opt_trt);
 
+  // timer.step("reorder2");
+
+  // NumericVector res(timer);
+  // for (int i=0; i<res.size(); i++) {
+  //   res[i] = res[i] / 1000000;
+  // }
+  // Rcpp::Rcout << res << std::endl;
   // Rprintf("recurse!\n");
   // now recurse!
   // if (opt_left.total_n > min_split)
@@ -152,6 +163,7 @@ bool BestSplitNum(const NumericVector &y, const NumericVector &x,
                   Block &opt_left, Block &opt_right,
                   double &split_tau, int &split_n) {
   // Rprintf("Start Numeric Best Split\n");
+  // Rcpp::Rcout << "start num" << std::endl;
   // Rprintf("start/end %d %d\n", start, end);
   const int len = end - start;
   // we will use ncum to keep track of counts of each treatment

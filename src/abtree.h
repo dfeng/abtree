@@ -6,10 +6,6 @@
 
 using namespace Rcpp;
 
-// =======================================  //
-// ===  Declaring Auxiliary Functions  ===  //
-// =======================================  //
-
 // ========================  Split  ========================  // 
 
 void Partition(Node *splitnode,
@@ -41,7 +37,8 @@ bool BestSplitCat(const NumericVector &y, const NumericVector &x,
 void Reorder(int split_col, int ncol,
              int split_n,
              int start, int end,
-             IntegerMatrix &ordering);
+             IntegerMatrix &ordering,
+             bool *which);
 
 // ========================  Complexity  ========================  // 
 

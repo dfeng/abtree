@@ -20,12 +20,10 @@ List rcpp_BuildTree(NumericVector y, NumericMatrix x,
                     IntegerVector trt, IntegerMatrix ordering,
                     IntegerVector ncat, int ntrt,
                     int min_bucket, int min_split, int max_depth) {
-  // Rprintf("Start of something new\n");
 
   int ncol = x.ncol();
   int nrow = x.nrow();
 
-  // Rprintf("Init the root\n");
   // Initialize the root
   NumericVector root_y(ntrt);
   IntegerVector root_n(ntrt);
@@ -38,14 +36,13 @@ List rcpp_BuildTree(NumericVector y, NumericMatrix x,
   Node *root = new Node(ntrt);
   root->blok = b;
 
-  // Rprintf("Time to partition\n");
   // TODO: do we want to do the ordering matrix in cpp?
+  // Right now this isn't the bottleneck
   Partition(root, y, x, trt, ordering,
             ntrt, ncat,
             ncol, 0, nrow,
             min_bucket, min_split, max_depth,
             0);
-  // Rprintf("Done partition\n");
 
   DoubleMat cp_table;
   // if no good splits were found even for the root
@@ -62,7 +59,7 @@ List rcpp_BuildTree(NumericVector y, NumericMatrix x,
 
   List ret;
   ret["cpp.tree"] = wrap(tree_df);
-  ret["cpp.ptr"] = xptr;
+  ret["cpp.ptr"]  = xptr;
   ret["cp.table"] = wrap(cp_table);
   return ret;
 }
