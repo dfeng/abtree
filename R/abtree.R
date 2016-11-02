@@ -1,6 +1,9 @@
 #' abtree
 #'
-#' @param formula an expression in the form of y ~ trt | cov1 + cov2 + ...
+#' @param formula an expression in the form of y ~ trt | cov1 + cov2 + ..., 
+#'        where 'y' is a numeric/binary response variable, 
+#'        'trt' must be a factor for the treatments, and cov1, cov2, ... are
+#'        predictors
 #' @param data the data frame where the variables reside
 #' @param min.bucket the minimum number of observations in each leaf
 #' @param min.split the minimum number of observations to return to the user
@@ -10,9 +13,44 @@
 #' @export
 #'
 #' @examples
-#' \dontrun{
-#' tree <- abtree(y ~ grp | hour + browser, data=x)
-#' }
+#' # fitting the model on the entire 'nsw' dataset
+#' tree <- abtree(outcome ~ treat | age + educ + race + marr + nodegr + log.re75 + u75,
+#'                data = nsw)
+#' plot(tree, xpd=TRUE)
+#' rec_treats <- predict(tree, new.data = nsw) # recommended treatments for each persons
+#' 
+#' # it is better to divide the dataset into a training set, a validation set 
+#' # (for pruning), and a test set for assessing model on unseen data
+#' 
+#' 
+#' set.seed(5)
+#' s <- sample(1:nrow(nsw))
+#' train <- nsw[s[1:500], ] # use 500 obs for training
+#' valid <- nsw[s[501:650],] # use 150 obs for pruning the tree
+#' test <- nsw[s[651:nrow(nsw)],] # use the remainder for model assessment
+#' 
+#' # fitting the model on the entire dataset
+#' tree <- abtree(outcome ~ treat | age + educ + race + marr + nodegr + log.re75 + u75,
+#'                data = train)
+#' ptree <- prune(tree, valid) # prune step
+#' rec_treats <- predict(tree, new.data = test) # recommended treatments 
+#' 
+#' 
+#' # model assessment
+#' 
+#' # 1. divide test set into two groups: individuals who received our 
+#' #    recommended treatments and individuals who did not receive
+#' #    our recommended treatments
+#' 
+#' match_grp <- test$treat == rec_treats
+#' 
+#' # 2. we want the average outcome to be better for the "match" group; check:
+#' mean(test$outcome[match_grp])
+#' mean(test$outcome[!match_grp])
+#' 
+#' # 3. indeed, the individuals who received our recommended treatment had a 9% higher
+#' #    chance of improving their income after the program than those who did not 
+
 abtree <- function(formula, data, min.bucket=10, min.split=30,
                      max.depth=5) {
   m <- ParseFormula(formula, data)
