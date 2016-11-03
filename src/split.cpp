@@ -276,7 +276,6 @@ bool BestSplitCat(NumericVector y, NumericMatrix::Column x,
   double opt_Q = -DBL_MAX;
   int left = start;
   for (int i = 0; i < K; i++) {
-    // Rprintf("i: %d\n", i);
     bool flags_pass = true;
     // bucket test
     for (int j = 0; j < ntrt; j++) {

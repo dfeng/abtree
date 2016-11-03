@@ -24,7 +24,7 @@ IntegerVector Predict(Node *root,
 // given a tree (root), return the leaf that this data ends up at
 // xrow is a row of the X matrix, not a column
 Node * PredictNode(Node *node,
-                   NumericMatrix::Column xrow,
+                   NumericMatrix::Row xrow,
                    IntegerVector ncat) {
   if (!node->left) {
     return node;

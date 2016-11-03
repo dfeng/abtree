@@ -1,12 +1,12 @@
 #ifndef NODE_H
 #define NODE_H
 
+#include <Rcpp.h>
+using namespace Rcpp;
+
 /*
   Data Structure defining blocks and nodes of the tree
  */
-
-#include <Rcpp.h>
-using namespace Rcpp;
 
 /*
   Blocks of data that correspond to splits in the decision tree

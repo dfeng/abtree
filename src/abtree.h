@@ -68,7 +68,7 @@ IntegerVector Predict(Node *root,
                       NumericVector y, NumericMatrix x,
                       IntegerVector trt, IntegerVector ncat);
 Node * PredictNode(Node *node,
-                   NumericMatrix::Column xrow,
+                   NumericMatrix::Row xrow,
                    IntegerVector ncat);
 void FillTest(Node *node);
 
