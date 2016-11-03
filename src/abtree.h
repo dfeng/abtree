@@ -9,22 +9,22 @@ using namespace Rcpp;
 // ========================  Split  ========================  // 
 
 void Partition(Node *splitnode,
-               const NumericVector &y, const NumericMatrix &x,
-               const IntegerVector &trt, IntegerMatrix &ordering,
+               NumericVector y, NumericMatrix x,
+               IntegerVector trt, IntegerMatrix ordering,
                int ntrt, const IntegerVector &ncat,
                int ncol, int start, int end,
                int min_bucket, int min_split, int max_depth,
                int level);
 
-bool BestSplitNum(const NumericVector &y, const NumericVector &x,
-                  const IntegerVector &trt, const IntegerVector &ordering,
+bool BestSplitNum(NumericVector y, NumericMatrix::Column x,
+                  IntegerVector trt, IntegerMatrix::Column ordering,
                   int ntrt, int start, int end,
                   int min_bucket, int min_split,
                   Block &opt_left, Block &opt_right,
                   double &split_tau, int &split_n);
 
-bool BestSplitCat(const NumericVector &y, const NumericVector &x,
-                  const IntegerVector &trt, const IntegerVector &ordering,
+bool BestSplitCat(NumericVector y, NumericMatrix::Column x,
+                  IntegerVector trt, IntegerMatrix::Column ordering,
                   int ntrt, int K,
                   int start, int end,
                   int min_bucket, int min_split,
@@ -35,10 +35,8 @@ bool BestSplitCat(const NumericVector &y, const NumericVector &x,
 // ========================  Reorder  ========================  // 
 
 void Reorder(int split_col, int ncol,
-             int split_n,
-             int start, int end,
-             IntegerMatrix &ordering,
-             bool *which);
+             int split_n, int start, int end,
+             IntegerMatrix ordering, bool *which);
 
 // ========================  Complexity  ========================  // 
 

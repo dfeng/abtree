@@ -24,7 +24,7 @@
 
 void Reorder(int split_col, int ncol,
              int split_n, int start, int end,
-             IntegerMatrix &ordering, bool *which) {
+             IntegerMatrix ordering, bool *which) {
   // column j of ordering
   for (int j=0; j < ncol; j++) {
     int leftpos = start;
