@@ -48,11 +48,11 @@ void SetBranch(Node *node, double branch);
 // ========================  Prune  ========================  // 
 
 void PredictPrune(Node *root,
-                  const NumericVector &y, const NumericMatrix &x,
-                  const IntegerVector &trt, IntegerVector &ncat,
-                  NumericMatrix &cp_table);
+                  NumericVector y, NumericMatrix x,
+                  IntegerVector trt, IntegerVector ncat,
+                  NumericMatrix cp_table);
 
-void FillComplexity(Node *node, NumericMatrix &cp_table);
+void FillComplexity(Node *node, NumericMatrix cp_table);
 void PruneTree(Node *root, double complexity);
 void TruncateNode(Node *node);
 
@@ -65,11 +65,11 @@ int NodeToRow(Node *node, DoubleMat &tree_df, int id);
 // ========================  Predict  ========================  // 
 
 IntegerVector Predict(Node *root,
-                      const NumericVector &y, const NumericMatrix x,
-                      const IntegerVector &trt, const IntegerVector &ncat);
+                      NumericVector y, NumericMatrix x,
+                      IntegerVector trt, IntegerVector ncat);
 Node * PredictNode(Node *node,
-                   const NumericVector &xrow,
-                   const IntegerVector &ncat);
+                   NumericMatrix::Column xrow,
+                   IntegerVector ncat);
 void FillTest(Node *node);
 
 #endif

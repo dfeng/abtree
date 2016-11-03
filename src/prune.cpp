@@ -6,9 +6,9 @@
 
 // x: test data
 void PredictPrune(Node *root,
-                  const NumericVector &y, const NumericMatrix &x,
-                  const IntegerVector &trt, IntegerVector &ncat,
-                  NumericMatrix &cp_table) {
+                  NumericVector y, NumericMatrix x,
+                  IntegerVector trt, IntegerVector ncat,
+                  NumericMatrix cp_table) {
   int n = cp_table.nrow();
 
   // looping through every data point
@@ -57,8 +57,7 @@ void PredictPrune(Node *root,
   FillComplexity(root, cp_table);
 }
 
-void FillComplexity(Node *node, NumericMatrix &cp_table) {
-  // node->print();
+void FillComplexity(Node *node, NumericMatrix cp_table) {
   if (node->pruned) {
     for (int i = 0; i < cp_table.nrow(); i++) {
       if (cp_table(i,0) >= node->complexity &&
