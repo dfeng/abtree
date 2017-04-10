@@ -1,23 +1,23 @@
 #' @export
 forest <- function(formula, data, min.bucket=10, min.split=30,
-                   max.depth=5, n.tree=50) {
+                   max.depth=4, n.tree=100) {
   n <- nrow(data)
   ltree <- list()
   for (i in 1:n.tree) {
-    bagdata <- data[sample(n, replace=TRUE),]
-    tree <- MakeTree(formula, bagdata, min.bucket=10, min.split=30,
-                     max.depth=5)
+    bagged.data <- data[sample(n, replace=TRUE),]
+    tree <- abtree(formula, bagged.data, min.bucket=min.bucket, min.split=min.split,
+                     max.depth=max.depth)
     ltree[[i]] <- tree
   }
   ltree
 }
 #' @export
-pforest <- function(ltree, newdata) {
+pforest <- function(ltree, new.data) {
   n <- length(ltree)
-  m <- nrow(newdata)
+  m <- nrow(new.data)
   preds <- matrix(,nrow=n,ncol=m)
   for (i in 1:n) {
-    preds[i,] <- predict.abtree(ltree[[i]], newdata)
+    preds[i,] <- predict.abtree(ltree[[i]], new.data)
   }
-  apply(preds, 2, function(x) which.max(table(x))-1)
+  apply(preds, 2, function(x) names(table(x))[which.max(table(x))])
 }
