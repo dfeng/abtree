@@ -14,7 +14,10 @@ void Partition(Node *splitnode,
                int ntrt, const IntegerVector &ncat,
                int ncol, int start, int end,
                int min_bucket, int min_split, int max_depth,
+               int mtry,
                int level);
+
+int randWrapper(const int n);
 
 bool BestSplitNum(NumericVector y, NumericMatrix::Column x,
                   IntegerVector trt, IntegerMatrix::Column ordering,

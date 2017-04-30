@@ -11,7 +11,7 @@ using namespace Rcpp;
  *
  * Idioms:
  *  - use Rcpp data structures whenever the object will be in contact with R
- *  - use natire cpp data structures o/w
+ *  - use native cpp data structures o/w
  * 
  */
 
@@ -19,7 +19,8 @@ using namespace Rcpp;
 List rcpp_BuildTree(NumericVector y, NumericMatrix x,
                     IntegerVector trt, IntegerMatrix ordering,
                     IntegerVector ncat, int ntrt,
-                    int min_bucket, int min_split, int max_depth) {
+                    int min_bucket, int min_split, int max_depth,
+                    int mtry) {
 
   int ncol = x.ncol();
   int nrow = x.nrow();
@@ -42,6 +43,7 @@ List rcpp_BuildTree(NumericVector y, NumericMatrix x,
             ntrt, ncat,
             ncol, 0, nrow,
             min_bucket, min_split, max_depth,
+            mtry,
             0);
 
   DoubleMat cp_table;

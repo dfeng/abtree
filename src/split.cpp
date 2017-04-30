@@ -27,6 +27,7 @@ void Partition(Node *splitnode,
                int ntrt, const IntegerVector &ncat,
                int ncol, int start, int end,
                int min_bucket, int min_split, int max_depth,
+               int mtry,
                int level) {
   int split_col, split_n;
   int split_first, split_last; // first and last for categorical
@@ -41,8 +42,16 @@ void Partition(Node *splitnode,
   if (level == max_depth)
     return;
 
+  // mtry bit (http://gallery.rcpp.org/articles/stl-random-shuffle/)
+  IntegerVector col_order = seq_len(ncol) - 1;
+  // Rcpp::Rcout << col_order << std::endl;
+  std::random_shuffle(col_order.begin(), col_order.end(), randWrapper);
+  // Rcpp::Rcout << col_order << std::endl;
+
   // looping over the columns
-  for (int i = 0; i < ncol; i++) {
+  for (int t = 0; t < mtry; t++) {
+    int i = col_order(t);
+    // Rcpp::Rcout << i << t << std::endl;
     double current_tau;
     int current_split_n = -1;
     int current_split_first = -1, current_split_last = -1;
@@ -142,9 +151,11 @@ void Partition(Node *splitnode,
   // Rcpp::Rcout << "split: " << res << std::endl << std::endl;
 
   // now recurse!
-  Partition(splitnode->left, y, x, trt, ordering, ntrt, ncat, ncol, start, split_n, min_bucket, min_split, max_depth, level+1);
-  Partition(splitnode->right, y, x, trt, ordering, ntrt, ncat, ncol, split_n, end, min_bucket, min_split, max_depth, level+1);
+  Partition(splitnode->left, y, x, trt, ordering, ntrt, ncat, ncol, start, split_n, min_bucket, min_split, max_depth, mtry, level+1);
+  Partition(splitnode->right, y, x, trt, ordering, ntrt, ncat, ncol, split_n, end, min_bucket, min_split, max_depth, mtry, level+1);
 }
+
+int randWrapper(const int n) { return floor(unif_rand() * n); }
 
 bool BestSplitNum(NumericVector y, NumericMatrix::Column x,
                   IntegerVector trt, IntegerMatrix::Column ordering,

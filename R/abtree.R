@@ -52,7 +52,7 @@
 #' #    chance of improving their income after the program than those who did not 
 
 abtree <- function(formula, data, min.bucket=10, min.split=30,
-                     max.depth=5) {
+                     max.depth=5, mtry=NULL) {
   m <- ParseFormula(formula, data)
   if(any(is.na(m$x))) {
     m$x <- na.omit(m$x)
@@ -69,6 +69,9 @@ abtree <- function(formula, data, min.bucket=10, min.split=30,
   if (class(m$y) == "character")
     stop("The response variable cannot be of type 'character'. Please convert to factor.")
 
+  # Random Forest parameters
+  if (is.null(mtry)) mtry <- ncol(m$x)
+
   x.levels <- sapply(m$x, levels)
   ncat     <- sapply(x.levels, length)
   y        <- as.numeric(m$y)
@@ -82,7 +85,8 @@ abtree <- function(formula, data, min.bucket=10, min.split=30,
                         ncat, length(trt.levels),
                         as.integer(min.bucket), # should these (as.integer)
                         as.integer(min.split),  # be here? or should they
-                        as.integer(max.depth))  # be conditions?
+                        as.integer(max.depth),  # be conditions?
+                        as.integer(mtry))
 
   class(out)     <- "abtree"
   out$formula    <- formula
