@@ -2,14 +2,15 @@
 #'
 #' @param obj an object of class 'abtree' returned by MakeTree
 #' @param new.data a new data frame containing the variables used in MakeTree
+#' @param type the type of data to return
 #'
 #' @return a vector of predicted optimal treatments for all of the observations
 #' @export
 #'
-predict.abtree <- function(obj, new.data) {
+predict.abtree <- function(obj, new.data, type="response") {
   m <- ParseFormula(obj$formula, new.data)
-  preds <- rep(NA, nrow(m$x))
-  if(any(is.na(m$x))) {
+  # TODO: Handling missing data, via surrogate splits
+  if (any(is.na(m$x))) {
     is_missing <- apply(m$x, 1, function(x) any(is.na(x)))
     m$x <- na.omit(m$x)
     warning("Missing values found in predictors. Rows containing missing values have been discarded.")
@@ -21,13 +22,23 @@ predict.abtree <- function(obj, new.data) {
   trt <- as.integer(m$trt)-1L # correcting for 0-index
   ord <- apply(x, 2, order)-1L # correcting for 0-index
   out <- rcpp_Predict(obj$cpp.ptr,
-                      y, x, trt, obj$ncat)
-  if(exists("is_missing")) {
-    preds[!is_missing] <- obj$trt.levels[out$predict.trt+1L]
-  } else {
-    preds <- obj$trt.levels[out$predict.trt+1L]
+                      y, x, trt, obj$ncat, length(obj$trt.levels))
+  if (type=="response") {
+    preds <- rep(NA, nrow(m$x))
+    if (exists("is_missing")) {
+      preds[!is_missing] <- obj$trt.levels[out$predict.trt+1L]
+    } else {
+      preds <- obj$trt.levels[out$predict.trt+1L]
+    }
+  } else if (type=="prob") {
+    preds <- matrix(NA, nrow=nrow(m$x), ncol=length(obj$trt.levels))
+    if (exists("is_missing")) {
+      preds[!is_missing,] <- out$predict.prob
+    } else {
+      preds <- out$predict.prob
+    }
+    colnames(preds) <- obj$trt.levels
   }
-  
   # attr(preds, "table") <- matrix(unlist(out$test), ncol=18, byrow=T)[,15:18]
   preds
 }

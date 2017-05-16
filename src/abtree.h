@@ -67,12 +67,13 @@ int NodeToRow(Node *node, DoubleMat &tree_df, int id);
 
 // ========================  Predict  ========================  // 
 
-IntegerVector Predict(Node *root,
-                      NumericVector y, NumericMatrix x,
-                      IntegerVector trt, IntegerVector ncat);
+// IntegerVector Predict(Node *root,
+//                       NumericVector y, NumericMatrix x,
+//                       IntegerVector trt, IntegerVector ncat,
+//                       int ntrt);
 Node * PredictNode(Node *node,
                    NumericMatrix::Row xrow,
                    IntegerVector ncat);
-void FillTest(Node *node);
+// void FillTest(Node *node);
 
 #endif

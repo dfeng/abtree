@@ -9,7 +9,7 @@ rcpp_Prune <- function(xptr, valid_y, valid_x, valid_trt, ncat, cp_table) {
     .Call('abtree_rcpp_Prune', PACKAGE = 'abtree', xptr, valid_y, valid_x, valid_trt, ncat, cp_table)
 }
 
-rcpp_Predict <- function(xptr, test_y, test_x, test_trt, ncat) {
-    .Call('abtree_rcpp_Predict', PACKAGE = 'abtree', xptr, test_y, test_x, test_trt, ncat)
+rcpp_Predict <- function(xptr, test_y, test_x, test_trt, ncat, ntrt) {
+    .Call('abtree_rcpp_Predict', PACKAGE = 'abtree', xptr, test_y, test_x, test_trt, ncat, ntrt)
 }
 

@@ -42,8 +42,8 @@ BEGIN_RCPP
 END_RCPP
 }
 // rcpp_Predict
-List rcpp_Predict(SEXP xptr, NumericVector test_y, NumericMatrix test_x, IntegerVector test_trt, IntegerVector ncat);
-RcppExport SEXP abtree_rcpp_Predict(SEXP xptrSEXP, SEXP test_ySEXP, SEXP test_xSEXP, SEXP test_trtSEXP, SEXP ncatSEXP) {
+List rcpp_Predict(SEXP xptr, NumericVector test_y, NumericMatrix test_x, IntegerVector test_trt, IntegerVector ncat, int ntrt);
+RcppExport SEXP abtree_rcpp_Predict(SEXP xptrSEXP, SEXP test_ySEXP, SEXP test_xSEXP, SEXP test_trtSEXP, SEXP ncatSEXP, SEXP ntrtSEXP) {
 BEGIN_RCPP
     Rcpp::RObject rcpp_result_gen;
     Rcpp::RNGScope rcpp_rngScope_gen;
@@ -52,7 +52,8 @@ BEGIN_RCPP
     Rcpp::traits::input_parameter< NumericMatrix >::type test_x(test_xSEXP);
     Rcpp::traits::input_parameter< IntegerVector >::type test_trt(test_trtSEXP);
     Rcpp::traits::input_parameter< IntegerVector >::type ncat(ncatSEXP);
-    rcpp_result_gen = Rcpp::wrap(rcpp_Predict(xptr, test_y, test_x, test_trt, ncat));
+    Rcpp::traits::input_parameter< int >::type ntrt(ntrtSEXP);
+    rcpp_result_gen = Rcpp::wrap(rcpp_Predict(xptr, test_y, test_x, test_trt, ncat, ntrt));
     return rcpp_result_gen;
 END_RCPP
 }

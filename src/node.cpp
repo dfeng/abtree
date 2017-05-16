@@ -8,18 +8,18 @@ Block::Block(NumericVector y0, IntegerVector n0) {
   // assigning to block struct
   y = y0; n = n0;
   int ntrt = y0.size();
-  NumericVector p(ntrt);
+  NumericVector prob(ntrt);
   total_n = 0;
   
-  // calculating p
+  // calculating prob
   opt_prob = -1.0;
   double tot_prob = 0;
   for (int i = 0; i < ntrt; i++) {
-    p[i] = y[i] / n[i];
-    tot_prob += p[i];
+    prob[i] = y[i] / n[i];
+    tot_prob += prob[i];
     total_n += n[i];
-    if (p[i] > opt_prob) {
-      opt_prob = p[i];
+    if (prob[i] > opt_prob) {
+      opt_prob = prob[i];
       opt_trt = i;
     }
   }
@@ -28,12 +28,13 @@ Block::Block(NumericVector y0, IntegerVector n0) {
   // calculate optimal Q
   switch(loss_type) {
     // regret/L1
-    case 0: opt_Q = total_n * sum(opt_prob - p);
+    case 0: opt_Q = total_n * sum(opt_prob - prob);
             break;
     // LS/L2
-    case 1: opt_Q = total_n * sum(pow(opt_prob - p, 2));
+    case 1: opt_Q = total_n * sum(pow(opt_prob - prob, 2));
             break;
   }
+  p = prob;
 };
 
 Node::Node(int ntrt) {
