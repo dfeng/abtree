@@ -20,16 +20,26 @@ abforest <- function(formula, data, min.bucket=10, min.split=30,
 predict.abforest <- function(abforest, new.data, type="response") {
   n <- length(abforest)
   m <- nrow(new.data)
-  preds <- matrix(,nrow=n,ncol=m)
   trt.levels <- abforest[[1]]$trt.levels
-  for (i in 1:n) {
-    preds[i,] <- predict.abtree(abforest[[i]], new.data, type="response")
-  }
-  if (type=="response") {
-    return(apply(preds, 2, function(x) names(table(x))[which.max(table(x))]))
-  } else if (type=="prob") {
-    return(t(apply(preds, 2, function(x) prop.table(table(factor(x, levels=trt.levels))))))
-  } else if (type=="votes") {
-    return(t(apply(preds, 2, function(x) table(factor(x, levels=trt.levels)))))
+  # uplift-type score / predicted probabilities
+  if (type=="pred.response") {
+    preds <- array(,dim=c(m,length(trt.levels),n))
+    for (i in 1:n) {
+      preds[,,i] <- predict.abtree(abforest[[i]], new.data, type="prob")
+    }
+    return(apply(preds, 1:2, mean))
+  # returned values using only the response
+  } else {
+    preds <- matrix(,nrow=m,ncol=n)
+    for (i in 1:n) {
+      preds[,i] <- predict.abtree(abforest[[i]], new.data, type="response")
+    }
+    if (type=="response") {
+      return(apply(preds, 1, function(x) names(which.max(table(x)))))
+    } else if (type=="prob") {
+      return(t(apply(preds, 1, function(x) prop.table(table(factor(x, levels=trt.levels))))))
+    } else if (type=="votes") {
+      return(t(apply(preds, 1, function(x) table(factor(x, levels=trt.levels)))))
+    }
   }
 }
