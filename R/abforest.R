@@ -7,6 +7,7 @@ abforest <- function(formula, data, min.bucket=10, min.split=30,
 
   n <- nrow(data)
   out <- list()
+  out$trees <- list()
 
   oob.estimates <- vector("list", n)
   for (i in 1:n.tree) {
@@ -20,7 +21,7 @@ abforest <- function(formula, data, min.bucket=10, min.split=30,
       oob <- oobers[i.oob]
       oob.estimates[[oob]] <- c(oob.estimates[[oob]], oob.pred[i.oob])
     }
-    out[[i]] <- tree
+    out$trees[[i]] <- tree
   }
   oob.pred <- lapply(oob.estimates, function(x) names(sort(table(x),decreasing=TRUE))[1])
   match <- oob.pred == data[,tree$trt.name]
@@ -35,19 +36,19 @@ abforest <- function(formula, data, min.bucket=10, min.split=30,
 predict.abforest <- function(abforest, new.data, type="response") {
   n <- length(abforest)
   m <- nrow(new.data)
-  trt.levels <- abforest[[1]]$trt.levels
+  trt.levels <- abforest$trees[[1]]$trt.levels
   # uplift-type score / predicted probabilities
   if (type=="pred.response") {
     preds <- array(,dim=c(m,length(trt.levels),n))
     for (i in 1:n) {
-      preds[,,i] <- predict.abtree(abforest[[i]], new.data, type="prob")
+      preds[,,i] <- predict.abtree(abforest$trees[[i]], new.data, type="prob")
     }
     return(apply(preds, 1:2, mean))
   # returned values using only the response
   } else {
     preds <- matrix(,nrow=m,ncol=n)
     for (i in 1:n) {
-      preds[,i] <- predict.abtree(abforest[[i]], new.data, type="response")
+      preds[,i] <- predict.abtree(abforest$trees[[i]], new.data, type="response")
     }
     if (type=="response") {
       return(apply(preds, 1, function(x) names(which.max(table(x)))))
