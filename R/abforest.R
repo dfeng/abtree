@@ -7,13 +7,28 @@ abforest <- function(formula, data, min.bucket=10, min.split=30,
 
   n <- nrow(data)
   out <- list()
+
+  oob.estimates <- vector("list", n)
   for (i in 1:n.tree) {
-    bagged.data <- data[sample(n, replace=TRUE),]
+    bagged.index <- sample(n, replace=TRUE)
+    oobers <- (1:n)[-bagged.index]
+    bagged.data <- data[bagged.index,]
     tree <- abtree(formula, bagged.data, min.bucket=min.bucket, min.split=min.split,
                      max.depth=max.depth, mtry)
+    oob.pred <- predict(tree, data[oobers,])
+    for (i.oob in 1:length(oobers)) {
+      oob <- oobers[i.oob]
+      oob.estimates[[oob]] <- c(oob.estimates[[oob]], oob.pred[i.oob])
+    }
     out[[i]] <- tree
   }
+  oob.pred <- lapply(oob.estimates, function(x) names(sort(table(x),decreasing=TRUE))[1])
+  match <- oob.pred == data[,tree$trt.name]
+  oob.match <- table(match=match, outcome=data[,tree$y.name])
+
   class(out) <- "abforest"
+  out$oob.estimates <- oob.estimates
+  out$oob.match <- oob.match
   out
 }
 #' @export

@@ -16,7 +16,7 @@ ParseFormula <- function(formula, data) {
   cov.names <- all.vars(covariates) # c("hour", "browser")
   # TODO: proper try/catch error handling in case covariate not in data.
   x <- as.data.frame(data[,cov.names], stringsAsFactors=FALSE)
-  list(y=y, x=x, trt=trt, y.name=response, trt.name=treat)
+  list(y=y, x=x, trt=trt, y.name=deparse(response), trt.name=deparse(treat))
 }
 
 # TODO: make the columns actually data.frames inside a data.frame,
