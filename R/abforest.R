@@ -40,14 +40,18 @@ predict.abforest <- function(abforest, new.data, type="response") {
   m <- nrow(new.data)
   trt.levels <- abforest$trees[[1]]$trt.levels
   # uplift-type score / predicted probabilities
-  if (type=="pred.response") {
+  if (type=="pred.response" | type=="raw.response") {
     preds <- array(, dim=c(m,length(trt.levels),n))
     for (i in 1:n) {
       preds[,,i] <- predict(abforest$trees[[i]], new.data, type="prob")
     }
-    resp <- apply(preds, 1:2, mean)
-    colnames(resp) <- trt.levels
-    return(resp)
+    if (type=="raw.response") {
+      return(preds)
+    } else {
+      resp <- apply(preds, 1:2, mean)
+      colnames(resp) <- trt.levels
+      return(resp)      
+    }
   # returned values using only the response
   } else {
     preds <- matrix(, nrow=m, ncol=n)
