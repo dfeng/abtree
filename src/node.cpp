@@ -23,7 +23,7 @@ Block::Block(NumericVector y0, IntegerVector n0) {
       opt_trt = i;
     }
   }
-  int loss_type = 1;
+  int loss_type = 0;
   // TODO: loss types
   // calculate optimal Q
   switch(loss_type) {

@@ -13,9 +13,8 @@ abforest <- function(formula, data, min.bucket=10, min.split=30,
   for (i in 1:n.tree) {
     bagged.index <- sample(n, replace=TRUE)
     oobers <- (1:n)[-bagged.index]
-    bagged.data <- data[bagged.index,]
-    tree <- abtree(formula, bagged.data, min.bucket=min.bucket, min.split=min.split,
-                     max.depth=max.depth, mtry)
+    tree <- abtree(formula, data[bagged.index,], min.bucket=min.bucket, min.split=min.split,
+                   max.depth=max.depth, mtry=mtry)
     oob.pred <- predict(tree, data[oobers,])
     for (i.oob in 1:length(oobers)) {
       oob <- oobers[i.oob]
@@ -23,30 +22,35 @@ abforest <- function(formula, data, min.bucket=10, min.split=30,
     }
     out$trees[[i]] <- tree
   }
-  oob.pred <- lapply(oob.estimates, function(x) names(sort(table(x),decreasing=TRUE))[1])
-  match <- oob.pred == data[,tree$trt.name]
-  oob.match <- table(match=match, outcome=data[,tree$y.name])
+  oob.pred <- lapply(oob.estimates, function(x) names(sort(table(x), decreasing=TRUE))[1])
+  oob.match <- table(match=(oob.pred == data[,tree$trt.name]), outcome=data[,tree$y.name])
+  # full.response <- lapply(1:length(oob.estimates), function(i) rep(data[i,tree$y.name], length(oob.estimates[[i]])))
+  # full.trt <- lapply(1:length(oob.estimates), function(i) rep(data[i,tree$trt.name], length(oob.estimates[[i]])))
+  # oob.fullmatch <- table(match=(unlist(oob.estimates) == unlist(full.trt)), outcome=unlist(full.response))
 
   class(out) <- "abforest"
   out$oob.estimates <- oob.estimates
   out$oob.match <- oob.match
+  # out$oob.fullmatch <- oob.fullmatch
   out
 }
 #' @export
 predict.abforest <- function(abforest, new.data, type="response") {
-  n <- length(abforest)
+  n <- length(abforest$trees)
   m <- nrow(new.data)
   trt.levels <- abforest$trees[[1]]$trt.levels
   # uplift-type score / predicted probabilities
   if (type=="pred.response") {
-    preds <- array(,dim=c(m,length(trt.levels),n))
+    preds <- array(, dim=c(m,length(trt.levels),n))
     for (i in 1:n) {
-      preds[,,i] <- predict.abtree(abforest$trees[[i]], new.data, type="prob")
+      preds[,,i] <- predict(abforest$trees[[i]], new.data, type="prob")
     }
-    return(apply(preds, 1:2, mean))
+    resp <- apply(preds, 1:2, mean)
+    colnames(resp) <- trt.levels
+    return(resp)
   # returned values using only the response
   } else {
-    preds <- matrix(,nrow=m,ncol=n)
+    preds <- matrix(, nrow=m, ncol=n)
     for (i in 1:n) {
       preds[,i] <- predict.abtree(abforest$trees[[i]], new.data, type="response")
     }

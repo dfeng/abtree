@@ -225,7 +225,7 @@ bool BestSplitNum(NumericVector y, NumericMatrix::Column x,
           opt_Q     = b_left.opt_Q + b_right.opt_Q;
           opt_left  = b_left;
           opt_right = b_right;
-          split_tau = prev_x;
+          split_tau = (x[ordering[i]] + prev_x)/2; // picking the midpoint
           split_n   = i;
         }
       }
@@ -245,7 +245,6 @@ bool BestSplitNum(NumericVector y, NumericMatrix::Column x,
   // if we didn't make any splits (because no buckets), return false
   return (opt_Q != -DBL_MAX);
 }
-
 
 bool BestSplitCat(NumericVector y, NumericMatrix::Column x,
                   IntegerVector trt, IntegerMatrix::Column ordering, 
