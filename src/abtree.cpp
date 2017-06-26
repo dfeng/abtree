@@ -55,14 +55,14 @@ List rcpp_BuildTree(NumericVector y, NumericMatrix x,
   //   cp_table = TreeComplexity(root);
   // }
 
-  Rcout << "Export" << std::endl;
+  // Rcout << "Export" << std::endl;
   DoubleMat tree_df;
   ExportTree(root, tree_df);
 
   // Pointer to our cpp tree struct
   XPtr<Node, PreserveStorage, DeleteTree> xptr(root, true);
 
-  Rcout << "All Done" << std::endl;
+  // Rcout << "All Done" << std::endl;
 
   List ret;
   ret["cpp.tree"] = wrap(tree_df);
