@@ -37,6 +37,7 @@ List rcpp_BuildTree(NumericVector y, NumericMatrix x,
   Node *root = new Node(ntrt);
   root->blok = b;
 
+  // Rcout << "Partition" << std::endl;
   // TODO: do we want to do the ordering matrix in cpp?
   // Right now this isn't the bottleneck
   Partition(root, y, x, trt, ordering,
@@ -46,23 +47,27 @@ List rcpp_BuildTree(NumericVector y, NumericMatrix x,
             mtry,
             0);
 
-  DoubleMat cp_table;
-  // if no good splits were found even for the root
-  // then skip cp_table
-  if (root->split_col != -1) {
-    cp_table = TreeComplexity(root);
-  }
+  // Rcout << "CP" << std::endl;
+  // DoubleMat cp_table;
+  // // if no good splits were found even for the root
+  // // then skip cp_table
+  // if (root->split_col != -1) {
+  //   cp_table = TreeComplexity(root);
+  // }
 
+  Rcout << "Export" << std::endl;
   DoubleMat tree_df;
   ExportTree(root, tree_df);
 
   // Pointer to our cpp tree struct
   XPtr<Node, PreserveStorage, DeleteTree> xptr(root, true);
 
+  Rcout << "All Done" << std::endl;
+
   List ret;
   ret["cpp.tree"] = wrap(tree_df);
   ret["cpp.ptr"]  = xptr;
-  ret["cp.table"] = wrap(cp_table);
+  // ret["cp.table"] = wrap(cp_table);
   return ret;
 }
 

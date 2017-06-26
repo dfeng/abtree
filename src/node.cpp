@@ -23,7 +23,7 @@ Block::Block(NumericVector y0, IntegerVector n0) {
       opt_trt = i;
     }
   }
-  int loss_type = 0;
+  int loss_type = 1;
   // TODO: loss types
   // calculate optimal Q
   switch(loss_type) {
@@ -32,6 +32,10 @@ Block::Block(NumericVector y0, IntegerVector n0) {
             break;
     // LS/L2
     case 1: opt_Q = total_n * sum(pow(opt_prob - prob, 2));
+            break;
+    // WSS/BSS
+    case 2: opt_Q = total_n * sum(pow(opt_prob - prob, 2)) / sum(((NumericVector) n) * prob * (1-prob));
+    // case 2: opt_Q = -sum(((NumericVector) n) * prob * (1-prob));
             break;
   }
   p = prob;

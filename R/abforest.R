@@ -11,6 +11,7 @@ abforest <- function(formula, data, min.bucket=10, min.split=30,
 
   oob.estimates <- vector("list", n)
   for (i in 1:n.tree) {
+    # print(i)
     bagged.index <- sample(n, replace=TRUE)
     oobers <- (1:n)[-bagged.index]
     tree <- abtree(formula, data[bagged.index,], min.bucket=min.bucket, min.split=min.split,

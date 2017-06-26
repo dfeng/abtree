@@ -97,6 +97,10 @@ abtree <- function(formula, data, min.bucket=10, min.split=30,
   out$y.name     <- m$y.name
   out$trt.name   <- m$trt.name
   out$frame      <- FormatTree(out)
-  out$cp.table   <- matrix(unlist(out$cp.table), ncol=2, byrow=T)
+  # if (length(out$cp.table) == 0) {
+  #   out$cp.table <- NULL
+  # } else {
+  #   out$cp.table <- matrix(unlist(out$cp.table), ncol=2, byrow=T)
+  # }
   out
 }
