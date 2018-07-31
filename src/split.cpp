@@ -169,7 +169,7 @@ double splitCriteria(Block &left, Block &right) {
   // double bss = sum(pow(left.total_p - left.p, 2)) + sum(pow(right.total_p - right.p, 2));
   double bss = left.total_n * pow(left.p[1] - left.p[0], 2) + right.total_n * pow(right.p[1] - right.p[0], 2);
   // double nf = 1.0 / left.n[0] + 1.0 / left.n[1] + 1.0 / right.n[0] + 1.0 / right.n[1];
-  double wss = left.total_n * sum(((NumericVector) left.n) * left.p * (1-left.p)) + right.total_n * sum(((NumericVector) right.n) * right.p * (1-right.p));
+  double wss = sum(((NumericVector) left.n) * left.p * (1-left.p)) + sum(((NumericVector) right.n) * right.p * (1-right.p));
   // Rcpp::Rcout << "bss: " << bss << std::endl;
   // Rcpp::Rcout << "wss: " << wss << std::endl;
   // Rcpp::Rcout << "nf: " << nf << std::endl;
