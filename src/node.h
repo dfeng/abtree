@@ -19,6 +19,7 @@ struct Block {
   // inferred values
   NumericVector p; // average response / trt
   int total_n;
+  double total_p;
 
   // optimal
   int opt_trt;

@@ -18,15 +18,16 @@ void Partition(Node *splitnode,
                int level);
 
 int randWrapper(const int n);
+double splitCriteria(Block &left, Block &right);
 
-bool BestSplitNum(NumericVector y, NumericMatrix::Column x,
+double BestSplitNum(NumericVector y, NumericMatrix::Column x,
                   IntegerVector trt, IntegerMatrix::Column ordering,
                   int ntrt, int start, int end,
                   int min_bucket, int min_split,
                   Block &opt_left, Block &opt_right,
                   double &split_tau, int &split_n);
 
-bool BestSplitCat(NumericVector y, NumericMatrix::Column x,
+double BestSplitCat(NumericVector y, NumericMatrix::Column x,
                   IntegerVector trt, IntegerMatrix::Column ordering,
                   int ntrt, int K,
                   int start, int end,

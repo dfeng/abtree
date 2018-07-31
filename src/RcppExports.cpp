@@ -7,7 +7,7 @@ using namespace Rcpp;
 
 // rcpp_BuildTree
 List rcpp_BuildTree(NumericVector y, NumericMatrix x, IntegerVector trt, IntegerMatrix ordering, IntegerVector ncat, int ntrt, int min_bucket, int min_split, int max_depth, int mtry);
-RcppExport SEXP abtree_rcpp_BuildTree(SEXP ySEXP, SEXP xSEXP, SEXP trtSEXP, SEXP orderingSEXP, SEXP ncatSEXP, SEXP ntrtSEXP, SEXP min_bucketSEXP, SEXP min_splitSEXP, SEXP max_depthSEXP, SEXP mtrySEXP) {
+RcppExport SEXP _abtree_rcpp_BuildTree(SEXP ySEXP, SEXP xSEXP, SEXP trtSEXP, SEXP orderingSEXP, SEXP ncatSEXP, SEXP ntrtSEXP, SEXP min_bucketSEXP, SEXP min_splitSEXP, SEXP max_depthSEXP, SEXP mtrySEXP) {
 BEGIN_RCPP
     Rcpp::RObject rcpp_result_gen;
     Rcpp::RNGScope rcpp_rngScope_gen;
@@ -27,7 +27,7 @@ END_RCPP
 }
 // rcpp_Prune
 List rcpp_Prune(SEXP xptr, NumericVector valid_y, NumericMatrix valid_x, IntegerVector valid_trt, IntegerVector ncat, NumericMatrix cp_table);
-RcppExport SEXP abtree_rcpp_Prune(SEXP xptrSEXP, SEXP valid_ySEXP, SEXP valid_xSEXP, SEXP valid_trtSEXP, SEXP ncatSEXP, SEXP cp_tableSEXP) {
+RcppExport SEXP _abtree_rcpp_Prune(SEXP xptrSEXP, SEXP valid_ySEXP, SEXP valid_xSEXP, SEXP valid_trtSEXP, SEXP ncatSEXP, SEXP cp_tableSEXP) {
 BEGIN_RCPP
     Rcpp::RObject rcpp_result_gen;
     Rcpp::RNGScope rcpp_rngScope_gen;
@@ -43,7 +43,7 @@ END_RCPP
 }
 // rcpp_Predict
 List rcpp_Predict(SEXP xptr, NumericVector test_y, NumericMatrix test_x, IntegerVector test_trt, IntegerVector ncat, int ntrt);
-RcppExport SEXP abtree_rcpp_Predict(SEXP xptrSEXP, SEXP test_ySEXP, SEXP test_xSEXP, SEXP test_trtSEXP, SEXP ncatSEXP, SEXP ntrtSEXP) {
+RcppExport SEXP _abtree_rcpp_Predict(SEXP xptrSEXP, SEXP test_ySEXP, SEXP test_xSEXP, SEXP test_trtSEXP, SEXP ncatSEXP, SEXP ntrtSEXP) {
 BEGIN_RCPP
     Rcpp::RObject rcpp_result_gen;
     Rcpp::RNGScope rcpp_rngScope_gen;
@@ -56,4 +56,16 @@ BEGIN_RCPP
     rcpp_result_gen = Rcpp::wrap(rcpp_Predict(xptr, test_y, test_x, test_trt, ncat, ntrt));
     return rcpp_result_gen;
 END_RCPP
+}
+
+static const R_CallMethodDef CallEntries[] = {
+    {"_abtree_rcpp_BuildTree", (DL_FUNC) &_abtree_rcpp_BuildTree, 10},
+    {"_abtree_rcpp_Prune", (DL_FUNC) &_abtree_rcpp_Prune, 6},
+    {"_abtree_rcpp_Predict", (DL_FUNC) &_abtree_rcpp_Predict, 6},
+    {NULL, NULL, 0}
+};
+
+RcppExport void R_init_abtree(DllInfo *dll) {
+    R_registerRoutines(dll, NULL, CallEntries, NULL, NULL);
+    R_useDynamicSymbols(dll, FALSE);
 }

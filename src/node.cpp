@@ -9,21 +9,22 @@ Block::Block(NumericVector y0, IntegerVector n0) {
   y = y0; n = n0;
   int ntrt = y0.size();
   NumericVector prob(ntrt);
-  total_n = 0;
+  int total_n = 0;
   
   // calculating prob
   opt_prob = -1.0;
-  double tot_prob = 0;
+  double total_y = 0;
   for (int i = 0; i < ntrt; i++) {
     prob[i] = y[i] / n[i];
-    tot_prob += prob[i];
+    total_y += y[i];
     total_n += n[i];
     if (prob[i] > opt_prob) {
       opt_prob = prob[i];
       opt_trt = i;
     }
   }
-  int loss_type = 1;
+  double total_p = total_y / total_n;
+  int loss_type = 2;
   // TODO: loss types
   // calculate optimal Q
   switch(loss_type) {
@@ -34,7 +35,10 @@ Block::Block(NumericVector y0, IntegerVector n0) {
     case 1: opt_Q = total_n * sum(pow(opt_prob - prob, 2));
             break;
     // WSS/BSS
-    case 2: opt_Q = total_n * sum(pow(opt_prob - prob, 2)) / sum(((NumericVector) n) * prob * (1-prob));
+    case 2: opt_Q = ( sum( pow(total_p - prob, 2)) ) / sum(((NumericVector) n) * prob * (1-prob));
+    // case 2: opt_Q = sum(pow(opt_prob - prob, 2)) / ( (n[0] * n[1] / pow(total_n, 2)) * sum(pow(opt_prob - prob, 2)) + sum(((NumericVector) n) * prob * (1-prob))/pow(total_n, 2) + 1);
+    // case 2: opt_Q = ( sum(((NumericVector) n) * prob * (1-prob)) / total_n ) / ( sum( ((NumericVector) n) * pow(total_p - prob, 2)) );
+    // case 2: opt_Q = ( sum( ((NumericVector) n) * pow(opt_prob - prob, 2)) ) / ( sum(y)  - sum(((NumericVector) n) * prob * prob) );
     // case 2: opt_Q = -sum(((NumericVector) n) * prob * (1-prob));
             break;
   }

@@ -33,7 +33,8 @@ void Partition(Node *splitnode,
   int split_first, split_last; // first and last for categorical
   int split_type; // optimal split type (ncat)
 
-  double opt_Q = splitnode->blok.opt_Q; // Do better than parents!! aka Chinese Motto
+  // double opt_Q = splitnode->blok.opt_Q; // Do better than parents!! aka Chinese Motto
+  double opt_Q = -DBL_MAX; // Do better than parents!! aka Chinese Motto
   Block opt_left, opt_right;
   double split_tau;
 
@@ -53,26 +54,28 @@ void Partition(Node *splitnode,
     int i = col_order(t);
     // Rcpp::Rcout << i << t << std::endl;
     double current_tau;
+    double current_Q;
     int current_split_n = -1;
     int current_split_first = -1, current_split_last = -1;
     Block current_left, current_right;
     if (ncat[i] == 0) {
-      if (!BestSplitNum(y, x(_,i), trt, ordering(_,i), ntrt,
+      current_Q = BestSplitNum(y, x(_,i), trt, ordering(_,i), ntrt,
                         start, end, min_bucket, min_split,
                         current_left, current_right,
-                        current_tau, current_split_n))
+                        current_tau, current_split_n);
+      if (current_Q == -DBL_MAX)
         continue;
     } else { // ncat[i] > 0 <==> categorical
-      if (!BestSplitCat(y, x(_,i), trt, ordering(_,i), ntrt, 
+      current_Q = BestSplitCat(y, x(_,i), trt, ordering(_,i), ntrt, 
                         ncat[i],
                         start, end, min_bucket, min_split,
                         current_left, current_right,
                         current_tau,
-                        current_split_first, current_split_last))
+                        current_split_first, current_split_last);
+      if (current_Q == -DBL_MAX)
         continue;
     }
 
-    double current_Q = current_left.opt_Q + current_right.opt_Q;
     if (current_Q > opt_Q) {
       split_type = ncat[i]; // categorical?
       opt_Q = current_Q;
@@ -95,7 +98,8 @@ void Partition(Node *splitnode,
 
   // if every attempted split returned false
   // which should happen when min_bucket/min_split fails every time
-  if (opt_Q == splitnode->blok.opt_Q) {
+  if (opt_Q == -DBL_MAX) {
+  // if (opt_Q == splitnode->blok.opt_Q) {
     // splitnode->is_leaf = true;
     // Rprintf("but we didn't find anything good\n");
     return;
@@ -157,7 +161,22 @@ void Partition(Node *splitnode,
 
 int randWrapper(const int n) { return floor(unif_rand() * n); }
 
-bool BestSplitNum(NumericVector y, NumericMatrix::Column x,
+double splitCriteria(Block &left, Block &right) {
+  // [ (yAL - YBL)^2 + (yAR - YBR)^2 ] / [1/n + ...] / (v + ...)
+  // Rcpp::Rcout << "left.opt_prob: " << left.opt_prob << std::endl;
+  // Rcpp::Rcout << "left.p: " << left.p << std::endl;
+  
+  // double bss = sum(pow(left.total_p - left.p, 2)) + sum(pow(right.total_p - right.p, 2));
+  double bss = left.total_n * pow(left.p[1] - left.p[0], 2) + right.total_n * pow(right.p[1] - right.p[0], 2);
+  // double nf = 1.0 / left.n[0] + 1.0 / left.n[1] + 1.0 / right.n[0] + 1.0 / right.n[1];
+  double wss = left.total_n * sum(((NumericVector) left.n) * left.p * (1-left.p)) + right.total_n * sum(((NumericVector) right.n) * right.p * (1-right.p));
+  // Rcpp::Rcout << "bss: " << bss << std::endl;
+  // Rcpp::Rcout << "wss: " << wss << std::endl;
+  // Rcpp::Rcout << "nf: " << nf << std::endl;
+  return bss / wss;
+}
+
+double BestSplitNum(NumericVector y, NumericMatrix::Column x,
                   IntegerVector trt, IntegerMatrix::Column ordering,
                   int ntrt, int start, int end,
                   int min_bucket, int min_split,
@@ -221,8 +240,10 @@ bool BestSplitNum(NumericVector y, NumericMatrix::Column x,
         Block b_right((NumericVector) ycum(len-1,_)-ycum(n-1,_),
                       (IntegerVector) ncum(len-1,_)-ncum(n-1,_));
 
-        if (b_left.opt_Q + b_right.opt_Q > opt_Q) {
-          opt_Q     = b_left.opt_Q + b_right.opt_Q;
+        double Q = splitCriteria(b_left, b_right);
+        // Rcpp::Rcout << "Q: " << Q << std::endl;
+        if (Q > opt_Q) {
+          opt_Q     = Q;
           opt_left  = b_left;
           opt_right = b_right;
           split_tau = (x[ordering[i]] + prev_x)/2; // picking the midpoint
@@ -243,10 +264,11 @@ bool BestSplitNum(NumericVector y, NumericMatrix::Column x,
 
 
   // if we didn't make any splits (because no buckets), return false
-  return (opt_Q != -DBL_MAX);
+  // return (opt_Q != -DBL_MAX);
+  return opt_Q;
 }
 
-bool BestSplitCat(NumericVector y, NumericMatrix::Column x,
+double BestSplitCat(NumericVector y, NumericMatrix::Column x,
                   IntegerVector trt, IntegerMatrix::Column ordering, 
                   int ntrt, int K,
                   int start, int end,
@@ -315,9 +337,9 @@ bool BestSplitCat(NumericVector y, NumericMatrix::Column x,
       // Rcpp::Rcout << "rn " << (IntegerVector) (ntot - (IntegerVector) ncat(i,_)) << std::endl;
 
       // Rprintf("cat:%d left: %0.2f right: %0.2f \n", i, b_left.opt_Q, b_right.opt_Q);
-
-      if (b_left.opt_Q + b_right.opt_Q > opt_Q) {
-        opt_Q = b_left.opt_Q + b_right.opt_Q;
+      double Q = splitCriteria(b_left, b_right);
+      if (Q > opt_Q) {
+        opt_Q = Q;
         opt_left = b_left;
         opt_right = b_right;
         split_tau = (double) i;
@@ -335,5 +357,6 @@ bool BestSplitCat(NumericVector y, NumericMatrix::Column x,
   // Rcpp::Rcout << "cat: " << res << std::endl;
 
   // if we didn't make any splits, return false
-  return (opt_Q != -DBL_MAX);
+  // return (opt_Q != -DBL_MAX);
+  return opt_Q;
 }
