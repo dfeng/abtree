@@ -18,7 +18,7 @@ Block::Block(NumericVector y0, NumericVector yy0, IntegerVector n0) {
   double ytot = 0;
   for (int i = 0; i < ntrt; i++) {
     mean[i] = y[i] / n[i];
-    var[i] = yy[i] / n[i] - pow(mean[i],2);
+    var[i] = yy[i] - pow(mean[i],2) * n[i];
     ytot += y[i];
     ntot += n[i];
     if (mean[i] > opt_mean) {
