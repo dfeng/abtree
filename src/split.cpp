@@ -163,7 +163,7 @@ int randWrapper(const int n) { return floor(unif_rand() * n); }
 
 double splitCriteria(Block &left, Block &right) {
   // [ (yAL - YBL)^2 + (yAR - YBR)^2 ] / [1/n + ...] / (v + ...)
-  // Rcpp::Rcout << "left.opt_prob: " << left.opt_prob << std::endl;
+  // Rcpp::Rcout << "left " << left.mean[1] << left.var[1] << std::endl;
   // Rcpp::Rcout << "left.p: " << left.p << std::endl;
   
   // double bss = sum(pow(left.total_p - left.p, 2)) + sum(pow(right.total_p - right.p, 2));
@@ -192,7 +192,7 @@ double BestSplitNum(NumericVector y, NumericMatrix::Column x,
 
   // Timer timer;
 
-  // Rprintf("Calculating Cumulative Sums\n");
+  Rprintf("Calculating Cumulative Sums\n");
   // calculate cumulative sums for use later
   for (int i = start; i < end; i++) {
     int o = ordering[i];
@@ -240,6 +240,8 @@ double BestSplitNum(NumericVector y, NumericMatrix::Column x,
       
       if (flags_pass) {
         // now evaluate the split at prev_x
+        // Rcpp::Rcout << "ycum" << ycum << std::endl;
+        // Rcpp::Rcout << "y2cum" << y2cum << std::endl;
         Block b_left((NumericVector) ycum(n-1,_),
                      (NumericVector) y2cum(n-1,_),
                      (IntegerVector) ncum(n-1,_));
@@ -247,6 +249,7 @@ double BestSplitNum(NumericVector y, NumericMatrix::Column x,
                       (NumericVector) y2cum(len-1,_)-y2cum(n-1,_),
                       (IntegerVector) ncum(len-1,_)-ncum(n-1,_));
 
+        // Rcpp::Rcout << "left" << b_left.mean[0] << b_left.mean[1] << std::endl;
         double Q = splitCriteria(b_left, b_right);
         // Rcpp::Rcout << "Q: " << Q << std::endl;
         if (Q > opt_Q) {
