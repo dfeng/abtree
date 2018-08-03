@@ -14,21 +14,23 @@ using namespace Rcpp;
 
 struct Block {
   NumericVector y; // response / trt
+  NumericVector yy; // response^2 / trt
   IntegerVector n; // count / trt
 
   // inferred values
-  NumericVector p; // average response / trt
-  int total_n;
-  double total_p;
+  NumericVector mean; // average response / trt
+  NumericVector var; // variance / trt
+  int ntot;
+  double meantot;
 
   // optimal
   int opt_trt;
   double opt_Q;
-  double opt_prob;
+  double opt_mean;
 
   // Constructors
   Block() {}; // default constructor, never used
-  Block(NumericVector y0, IntegerVector n0);
+  Block(NumericVector y0, NumericVector yy0, IntegerVector n0);
 };
 
 /*
@@ -53,8 +55,10 @@ struct Node {
   Block test_blok;
 
   NumericVector prune_y;
+  NumericVector prune_y2;
   IntegerVector prune_n;
   NumericVector predict_y;
+  NumericVector predict_y2;
   IntegerVector predict_n;
 
   Node *left; // pointer to left branch

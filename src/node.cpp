@@ -4,45 +4,47 @@
 
 extern int loss_type; // variable to determine which loss function to use
 
-Block::Block(NumericVector y0, IntegerVector n0) {
+Block::Block(NumericVector y0, NumericVector yy0, IntegerVector n0) {
   // assigning to block struct
-  y = y0; n = n0;
+  y = y0; yy= yy0; n = n0;
   int ntrt = y0.size();
-  NumericVector prob(ntrt);
-  int total_n = 0;
+  NumericVector mean(ntrt);
+  NumericVector var(ntrt);
+  int ntot = 0;
   
   // calculating prob
-  opt_prob = -1.0;
-  double total_y = 0;
+  // opt_prob = -1.0;
+  opt_mean = -DBL_MAX;
+  double ytot = 0;
   for (int i = 0; i < ntrt; i++) {
-    prob[i] = y[i] / n[i];
-    total_y += y[i];
-    total_n += n[i];
-    if (prob[i] > opt_prob) {
-      opt_prob = prob[i];
+    mean[i] = y[i] / n[i];
+    var[i] = yy[i] / n[i] - pow(mean[i],2);
+    ytot += y[i];
+    ntot += n[i];
+    if (mean[i] > opt_mean) {
+      opt_mean = mean[i];
       opt_trt = i;
     }
   }
-  double total_p = total_y / total_n;
+  double meantot = ytot / ntot;
   int loss_type = 2;
   // TODO: loss types
   // calculate optimal Q
   switch(loss_type) {
     // regret/L1
-    case 0: opt_Q = total_n * sum(opt_prob - prob);
+    case 0: opt_Q = ntot * sum(opt_mean - mean);
             break;
     // LS/L2
-    case 1: opt_Q = total_n * sum(pow(opt_prob - prob, 2));
+    case 1: opt_Q = ntot * sum(pow(opt_mean - mean, 2));
             break;
     // WSS/BSS
-    case 2: opt_Q = ( sum( pow(total_p - prob, 2)) ) / sum(((NumericVector) n) * prob * (1-prob));
-    // case 2: opt_Q = sum(pow(opt_prob - prob, 2)) / ( (n[0] * n[1] / pow(total_n, 2)) * sum(pow(opt_prob - prob, 2)) + sum(((NumericVector) n) * prob * (1-prob))/pow(total_n, 2) + 1);
-    // case 2: opt_Q = ( sum(((NumericVector) n) * prob * (1-prob)) / total_n ) / ( sum( ((NumericVector) n) * pow(total_p - prob, 2)) );
-    // case 2: opt_Q = ( sum( ((NumericVector) n) * pow(opt_prob - prob, 2)) ) / ( sum(y)  - sum(((NumericVector) n) * prob * prob) );
-    // case 2: opt_Q = -sum(((NumericVector) n) * prob * (1-prob));
+    case 2: opt_Q = ( sum( pow(meantot - mean, 2)) ) / sum(((NumericVector) n) * mean * (1-mean));
+    // case 2: opt_Q = sum(pow(opt_prob - mean, 2)) / ( (n[0] * n[1] / pow(ntot, 2)) * sum(pow(opt_prob - mean, 2)) + sum(((NumericVector) n) * mean * (1-mean))/pow(ntot, 2) + 1);
+    // case 2: opt_Q = ( sum(((NumericVector) n) * mean * (1-mean)) / ntot ) / ( sum( ((NumericVector) n) * pow(meantot - mean, 2)) );
+    // case 2: opt_Q = ( sum( ((NumericVector) n) * pow(opt_prob - mean, 2)) ) / ( sum(y)  - sum(((NumericVector) n) * mean * mean) );
+    // case 2: opt_Q = -sum(((NumericVector) n) * mean * (1-mean));
             break;
   }
-  p = prob;
 };
 
 Node::Node(int ntrt) {

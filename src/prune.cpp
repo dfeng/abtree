@@ -23,6 +23,7 @@ void PredictPrune(Node *root,
           if (cp_table(i,0) >= node->complexity &&
               (cp_table(i,0) < node->branch || node->branch == -1.0)) {
             node->prune_y[trt[j]] += y[j];
+            node->prune_y2[trt[j]] += pow(y[j],2);
             node->prune_n[trt[j]]++;
             // Rcout << "prune_y " << node->prune_y << std::endl;
           }
@@ -47,6 +48,7 @@ void PredictPrune(Node *root,
     for (int i = 0; i < cp_table.nrow(); i++) {
       if (cp_table(i,0) < node->branch) {
         node->prune_y[trt[j]] += y[j];
+        node->prune_y2[trt[j]] += pow(y[j],2);
         node->prune_n[trt[j]]++;
         // Rprintf("node->blok.opt_prob %0.2f\n", node->blok.opt_prob);
       }
@@ -62,7 +64,7 @@ void FillComplexity(Node *node, NumericMatrix cp_table) {
     for (int i = 0; i < cp_table.nrow(); i++) {
       if (cp_table(i,0) >= node->complexity &&
           (cp_table(i,0) < node->branch || node->branch == -1.0)) {
-        Block b = Block(node->prune_y, node->prune_n);
+        Block b = Block(node->prune_y, node->prune_y2, node->prune_n);
         cp_table(i,1) += b.opt_Q;
       }
     }
@@ -73,7 +75,7 @@ void FillComplexity(Node *node, NumericMatrix cp_table) {
   } else {
     for (int i = 0; i < cp_table.nrow(); i++) {
       if (cp_table(i,0) < node->branch) {
-        Block b = Block(node->prune_y, node->prune_n);
+        Block b = Block(node->prune_y, node->prune_y2, node->prune_n);
         cp_table(i,1) += b.opt_Q;
       }
     }

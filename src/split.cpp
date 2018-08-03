@@ -34,7 +34,7 @@ void Partition(Node *splitnode,
   int split_type; // optimal split type (ncat)
 
   // double opt_Q = splitnode->blok.opt_Q; // Do better than parents!! aka Chinese Motto
-  double opt_Q = -DBL_MAX; // Do better than parents!! aka Chinese Motto
+  double opt_Q = -DBL_MAX;
   Block opt_left, opt_right;
   double split_tau;
 
@@ -167,9 +167,10 @@ double splitCriteria(Block &left, Block &right) {
   // Rcpp::Rcout << "left.p: " << left.p << std::endl;
   
   // double bss = sum(pow(left.total_p - left.p, 2)) + sum(pow(right.total_p - right.p, 2));
-  double bss = left.total_n * pow(left.p[1] - left.p[0], 2) + right.total_n * pow(right.p[1] - right.p[0], 2);
+  double bss = left.ntot * pow(left.mean[1] - left.mean[0], 2) + right.ntot * pow(right.mean[1] - right.mean[0], 2);
   // double nf = 1.0 / left.n[0] + 1.0 / left.n[1] + 1.0 / right.n[0] + 1.0 / right.n[1];
-  double wss = sum(((NumericVector) left.n) * left.p * (1-left.p)) + sum(((NumericVector) right.n) * right.p * (1-right.p));
+  double wss = left.var[0] + left.var[1] + right.var[0] + right.var[1];
+  // double wss = sum(((NumericVector) left.n) * left.p * (1-left.p)) + sum(((NumericVector) right.n) * right.p * (1-right.p));
   // Rcpp::Rcout << "bss: " << bss << std::endl;
   // Rcpp::Rcout << "wss: " << wss << std::endl;
   // Rcpp::Rcout << "nf: " << nf << std::endl;
@@ -187,6 +188,7 @@ double BestSplitNum(NumericVector y, NumericMatrix::Column x,
   // and response for each treatment as we proceed through the data
   IntegerMatrix ncum(len, ntrt);
   NumericMatrix ycum(len, ntrt);
+  NumericMatrix y2cum(len, ntrt);
 
   // Timer timer;
 
@@ -197,13 +199,16 @@ double BestSplitNum(NumericVector y, NumericMatrix::Column x,
     if (i == start) {
       ncum(0,trt[o])++;
       ycum(0,trt[o]) = y[o];
+      y2cum(0,trt[o]) = pow(y[o],2);
     } else {
       for (int j = 0; j < ntrt; j++) {
         ncum(i-start,j) = ncum(i-start-1,j);
         ycum(i-start,j) = ycum(i-start-1,j);
+        y2cum(i-start,j) = y2cum(i-start-1,j);
       }
       ncum(i-start,trt[o])++;
       ycum(i-start,trt[o]) += y[o];
+      y2cum(i-start,trt[o]) += pow(y[o],2);
     }
   }
 
@@ -236,8 +241,10 @@ double BestSplitNum(NumericVector y, NumericMatrix::Column x,
       if (flags_pass) {
         // now evaluate the split at prev_x
         Block b_left((NumericVector) ycum(n-1,_),
+                     (NumericVector) y2cum(n-1,_),
                      (IntegerVector) ncum(n-1,_));
         Block b_right((NumericVector) ycum(len-1,_)-ycum(n-1,_),
+                      (NumericVector) y2cum(len-1,_)-y2cum(n-1,_),
                       (IntegerVector) ncum(len-1,_)-ncum(n-1,_));
 
         double Q = splitCriteria(b_left, b_right);
@@ -280,8 +287,10 @@ double BestSplitCat(NumericVector y, NumericMatrix::Column x,
   // Rprintf("start/end %d %d\n", start, end);
   IntegerMatrix ncat(K,ntrt); // defaults to 0
   NumericMatrix ycat(K,ntrt); // defaults to 0.0
+  NumericMatrix y2cat(K,ntrt); // defaults to 0.0
   IntegerVector ntot(ntrt);
   NumericVector ytot(ntrt);
+  NumericVector y2tot(ntrt);
 
   // Timer timer;
 
@@ -296,8 +305,10 @@ double BestSplitCat(NumericVector y, NumericMatrix::Column x,
     }
     ncat(current_cat,trt[o])++;
     ycat(current_cat,trt[o]) += y[o];
+    y2cat(current_cat,trt[o]) += pow(y[o],2);
     ntot[trt[o]]++;
     ytot[trt[o]] += y[o];
+    y2tot[trt[o]] += pow(y[o],2);
   }
   // Rcpp::Rcout << "ncat " << ncat << std::endl;
   // Rcpp::Rcout << "ycat " << ycat << std::endl;
@@ -327,8 +338,10 @@ double BestSplitCat(NumericVector y, NumericMatrix::Column x,
       // for convenience, left is the category being split on and
       // throw everyone else into right branch)
       Block b_left((NumericVector) ycat(i,_),
+                   (NumericVector) y2cat(i,_),
                    (IntegerVector) ncat(i,_));
       Block b_right((NumericVector) (ytot - (NumericVector) ycat(i,_)),
+                    (NumericVector) (y2tot - (NumericVector) y2cat(i,_)),
                     (IntegerVector) (ntot - (IntegerVector) ncat(i,_)));
 
       // Rcpp::Rcout << "ly " << (NumericVector) ycat(i,_) << std::endl;

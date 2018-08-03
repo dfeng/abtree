@@ -27,12 +27,14 @@ List rcpp_BuildTree(NumericVector y, NumericMatrix x,
 
   // Initialize the root
   NumericVector root_y(ntrt);
+  NumericVector root_y2(ntrt);
   IntegerVector root_n(ntrt);
   for (int i = 0; i < nrow; i++) {
     root_y[trt[i]] += y[i];
+    root_y2[trt[i]] += pow(y[i],2);
     root_n[trt[i]] ++;
   }
-  Block b(root_y, root_n);
+  Block b(root_y, root_y2, root_n);
 
   Node *root = new Node(ntrt);
   root->blok = b;
@@ -115,7 +117,7 @@ List rcpp_Predict(SEXP xptr,
   // for each data point
   for (int i = 0; i < nrow; i++) {
     Node *leaf = PredictNode(root, test_x(i,_), ncat);
-    pred_prob(i,_) = leaf->blok.p;
+    pred_prob(i,_) = leaf->blok.mean;
     // Rcout << "p: " << leaf->blok.p << std::endl;
     // Rcout << "n: " << leaf->blok.total_n << std::endl;
     pred_trt[i] = leaf->blok.opt_trt;
