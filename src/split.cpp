@@ -192,7 +192,7 @@ double BestSplitNum(NumericVector y, NumericMatrix::Column x,
 
   // Timer timer;
 
-  Rprintf("Calculating Cumulative Sums\n");
+  // Rprintf("Calculating Cumulative Sums\n");
   // calculate cumulative sums for use later
   for (int i = start; i < end; i++) {
     int o = ordering[i];
