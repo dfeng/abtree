@@ -9,29 +9,29 @@ abforest <- function(formula, data, min.bucket=10, min.split=30,
   out <- list()
   out$trees <- list()
 
-  oob.estimates <- vector("list", n)
+  # oob.estimates <- vector("list", n)
   for (i in 1:n.tree) {
     # print(i)
     bagged.index <- sample(n, replace=TRUE)
-    oobers <- (1:n)[-bagged.index]
+    # oobers <- (1:n)[-bagged.index]
     tree <- abtree(formula, data[bagged.index,], min.bucket=min.bucket, min.split=min.split,
                    max.depth=max.depth, mtry=mtry)
-    oob.pred <- predict(tree, data[oobers,])
-    for (i.oob in 1:length(oobers)) {
-      oob <- oobers[i.oob]
-      oob.estimates[[oob]] <- c(oob.estimates[[oob]], oob.pred[i.oob])
-    }
+    # oob.pred <- predict(tree, data[oobers,])
+    # for (i.oob in 1:length(oobers)) {
+    #   oob <- oobers[i.oob]
+    #   oob.estimates[[oob]] <- c(oob.estimates[[oob]], oob.pred[i.oob])
+    # }
     out$trees[[i]] <- tree
   }
-  oob.pred <- lapply(oob.estimates, function(x) names(sort(table(x), decreasing=TRUE))[1])
-  oob.match <- table(match=(oob.pred == data[,tree$trt.name]), outcome=data[,tree$y.name])
+  # oob.pred <- lapply(oob.estimates, function(x) names(sort(table(x), decreasing=TRUE))[1])
+  # oob.match <- table(match=(oob.pred == data[,tree$trt.name]), outcome=data[,tree$y.name])
   # full.response <- lapply(1:length(oob.estimates), function(i) rep(data[i,tree$y.name], length(oob.estimates[[i]])))
   # full.trt <- lapply(1:length(oob.estimates), function(i) rep(data[i,tree$trt.name], length(oob.estimates[[i]])))
   # oob.fullmatch <- table(match=(unlist(oob.estimates) == unlist(full.trt)), outcome=unlist(full.response))
 
   class(out) <- "abforest"
-  out$oob.estimates <- oob.estimates
-  out$oob.match <- oob.match
+  # out$oob.estimates <- oob.estimates
+  # out$oob.match <- oob.match
   # out$oob.fullmatch <- oob.fullmatch
   out
 }
