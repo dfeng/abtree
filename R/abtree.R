@@ -7,9 +7,12 @@
 #' @param data the data frame where the variables reside
 #' @param min.bucket the minimum number of observations in each leaf
 #' @param min.split the minimum number of observations to return to the user
+#' @param max.depth the maximum depth of each tree
+#' @param mtry the number of features to select at random to grow each tree
 #'
 #' @return tree: a data frame containing the nodes of the tree
-#'         treatments: a mapping of A and B to the treatments passed in
+#'         treatments: a mapping of A and B to the treatments passed in 
+#' @import stats
 #' @export
 #'
 #' @examples

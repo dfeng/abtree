@@ -1,15 +1,9 @@
 Package: abtree
-Type: Package
 Title: Subgroup-Based Treatment Assignment
 Version: 0.2
 Date: 2016-06-15
-Depends: 
-    rpart,
-    stats,
-    utils,
-    graphics
-Authors@R: c(person("Xiaofei", "Wang", email = "xiaofei.wang@yale.edu", role = c("aut")),
-             person("Derek", "Feng", email="derek.feng@yale.edu", role=c("aut", "cre")))
+Depends: rpart
+Authors@R: c(person("Xiaofei", "Wang", email = "xiaofei.wang@yale.edu", role = c("aut")), person("Derek", "Feng", email="derek.feng@yale.edu", role=c("aut", "cre")))
 Description: Given two possible treatments, there may exist subgroups who
     benefit greater from one treatment than the other. This problem is relevant
     to the field of marketing, where treatments may correspond to different
@@ -26,6 +20,7 @@ Description: Given two possible treatments, there may exist subgroups who
     dataset.
 License: GPL (>= 2)
 LazyData: TRUE
+Encoding: UTF-8
 Imports:
     Rcpp (>= 0.12.3)
 LinkingTo: Rcpp

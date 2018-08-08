@@ -1,10 +1,13 @@
 #' plot.abtree
 #'
-#' @param obj an object of class 'abtree'
+#' @param x an object of class 'abtree'
 #' @param margin some margin settings?
 #' @param digits the number of digits to show for split points of quantitative variables
 #' @param scientific FALSE if tree is to be plotted without scientific notation for split points
+#' @param binaryY whether we have binary outcome
+#' @param ... other optional arguments
 #' @return a plot of the tree
+#' @import graphics
 #' @export
 #'
 #' @examples
@@ -12,10 +15,10 @@
 #' tree <- MakeTree(y ~ grp | hour + browser, data=x)
 #' plot(tree)
 #' }
-plot.abtree <- function (obj, margin = 0, digits=3, scientific=FALSE, binaryY = FALSE,
+plot.abtree <- function (x, margin = 0, digits=3, scientific=FALSE, binaryY = FALSE,
                          ...)
 {
-  tree <- FormatTree(obj)#, child_id=TRUE, digits=digits, scientific=scientific)
+  tree <- FormatTree(x)#, child_id=TRUE, digits=digits, scientific=scientific)
   if (nrow(tree) <= 1L)
     stop("A tree with just a root; nothing to plot.")
 
@@ -40,7 +43,7 @@ plot.abtree <- function (obj, margin = 0, digits=3, scientific=FALSE, binaryY = 
   for (j in 1:nrow(tree)) {
     if (tree$split_var[j] == "<leaf>") {
       label[i] <- formatLeaf(tree$optimal_trt[j], 
-                             tree[j, 10:(10+2*length(obj$trt.levels)-1)], 
+                             tree[j, 10:(10+2*length(x$trt.levels)-1)], 
                              binaryY, digits)
       xvals[i] <- xx[j]
       yvals[i] <- yy[j]
@@ -72,51 +75,52 @@ plot.abtree <- function (obj, margin = 0, digits=3, scientific=FALSE, binaryY = 
   text(xvals, yvals, pos=pos, label, ...)
   invisible(list(x = xx, y = yy))
 }
-
-plot.legacy <- function(obj) {
-  # TODO: put require as part of package
-  require(igraph)
-  tree <- FormatTree(obj, child_id=TRUE)
-  isParent <- tree$split_var != "<leaf>"
-  parentRows <- tree[isParent,]
-  childRows <- tree[!isParent,]
-  parents <- which(isParent)
-  vertices <- data.frame(name=1:nrow(tree),
-                         label=tree$split_var,
-                         size2=15,
-                         label.cex = 1,
-                         stringsAsFactors=FALSE)
-  vertices$label[!isParent] <- paste0("A: ",
-                                      round(100*childRows$p_A,2),
-                                      "%\n (", childRows$n_A, ")\n B: ",
-                                      round(100*childRows$p_B, 2),
-                                      "%\n (", childRows$n_B, ")\n ",
-                                      childRows$optimal_trt)
-  vertices$label.cex[!isParent] <- 0.8
-  vertices$size2[!isParent] <- 30
-
-  edge_labels_left <- rep(NA, length(parents))
-  edge_labels_right <- rep(NA, length(parents))
-  edge_labels_left[parentRows$var_type %in% c(0,2)] <- paste0("<=", parentRows$split_value[parentRows$var_type %in% c(0,2)])
-  edge_labels_left[parentRows$var_type == 1] <- parentRows$split_value[parentRows$var_type == 1]
-  edge_labels_right[parentRows$var_type==1] <- paste0("!=", parentRows$split_value[parentRows$var_type == 1])
-  edge_labels_right[parentRows$var_type %in% c(0,2)] <- paste0(">", parentRows$split_value[parentRows$var_type %in% c(0,2)])
-  edges <- data.frame(from=c(parents, parents),
-                      to = c(parentRows$childleft_id,
-                             parentRows$childright_id),
-                      label=c(edge_labels_left, edge_labels_right))
-  g <- graph_from_data_frame(edges, directed=FALSE,
-                             vertices=vertices)
-  par(mar=c(0,0,0,0))
-  #co <- layout.reingold.tilford(g, root=1)
-  co <- layout_(g, as_tree(root=1, rootlevel=1))
-  plot(g, layout=co, vertex.size=30, vertex.shape="rectangle")
-  invisible(g)
-}
+# 
+# plot.legacy <- function(obj) {
+#   # TODO: put require as part of package
+#   require(igraph)
+#   tree <- FormatTree(obj, child_id=TRUE)
+#   isParent <- tree$split_var != "<leaf>"
+#   parentRows <- tree[isParent,]
+#   childRows <- tree[!isParent,]
+#   parents <- which(isParent)
+#   vertices <- data.frame(name=1:nrow(tree),
+#                          label=tree$split_var,
+#                          size2=15,
+#                          label.cex = 1,
+#                          stringsAsFactors=FALSE)
+#   vertices$label[!isParent] <- paste0("A: ",
+#                                       round(100*childRows$p_A,2),
+#                                       "%\n (", childRows$n_A, ")\n B: ",
+#                                       round(100*childRows$p_B, 2),
+#                                       "%\n (", childRows$n_B, ")\n ",
+#                                       childRows$optimal_trt)
+#   vertices$label.cex[!isParent] <- 0.8
+#   vertices$size2[!isParent] <- 30
+# 
+#   edge_labels_left <- rep(NA, length(parents))
+#   edge_labels_right <- rep(NA, length(parents))
+#   edge_labels_left[parentRows$var_type %in% c(0,2)] <- paste0("<=", parentRows$split_value[parentRows$var_type %in% c(0,2)])
+#   edge_labels_left[parentRows$var_type == 1] <- parentRows$split_value[parentRows$var_type == 1]
+#   edge_labels_right[parentRows$var_type==1] <- paste0("!=", parentRows$split_value[parentRows$var_type == 1])
+#   edge_labels_right[parentRows$var_type %in% c(0,2)] <- paste0(">", parentRows$split_value[parentRows$var_type %in% c(0,2)])
+#   edges <- data.frame(from=c(parents, parents),
+#                       to = c(parentRows$childleft_id,
+#                              parentRows$childright_id),
+#                       label=c(edge_labels_left, edge_labels_right))
+#   g <- graph_from_data_frame(edges, directed=FALSE,
+#                              vertices=vertices)
+#   par(mar=c(0,0,0,0))
+#   #co <- layout.reingold.tilford(g, root=1)
+#   co <- layout_(g, as_tree(root=1, rootlevel=1))
+#   plot(g, layout=co, vertex.size=30, vertex.shape="rectangle")
+#   invisible(g)
+# }
 
 # =================  #
 # ===  Helpers  ===  #
 # =================  #
+#' @import utils
 abtree_segments <- function (x, ...)
 {
   dat <- data.frame(stack(as.data.frame(x$x)), stack(as.data.frame(x$y)))[,

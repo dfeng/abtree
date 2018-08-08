@@ -1,17 +1,18 @@
 #' prune.abtree
 #'
-#' @param obj an object of class 'abtree' returned by MakeTree
+#' @param tree an object of class 'abtree' returned by MakeTree
 #' @param valid.data a new data frame containing the variables used in MakeTree
+#' @param ... optional arguments
 #'
 #' @return a pruned tree (object of class 'abtree')
 #' @importFrom rpart prune
 #' @exportClass abtree
 #' @export
-prune.abtree <- function(obj, valid.data) {
-  if (length(obj$cp.table) == 0)
-    return(obj)
+prune.abtree <- function(tree, valid.data, ...) {
+  if (length(tree$cp.table) == 0)
+    return(tree)
 
-  m <- ParseFormula(obj$formula, valid.data)
+  m <- ParseFormula(tree$formula, valid.data)
   if(any(is.na(m$x))) {
     m$x <- na.omit(m$x)
     warning("Missing values found in predictors. Rows containing missing values have been discarded.")
@@ -22,16 +23,16 @@ prune.abtree <- function(obj, valid.data) {
   x[,x.types=="factor"] <- x[,x.types=="factor"]-1L # correcting for 0-index
   trt <- as.integer(m$trt)-1L # correcting for 0-index
 
-  if (any(obj$trt.levels != levels(m$trt)))
+  if (any(tree$trt.levels != levels(m$trt)))
     stop("The treatment variable levels have changed!")
-  if (!all.equal(obj$x.levels, sapply(m$x, function(t) levels(t))))
+  if (!all.equal(tree$x.levels, sapply(m$x, function(t) levels(t))))
     stop("At least one predictor has different levels!")
 
-  out <- rcpp_Prune(obj$cpp.ptr,
-                    y, x, trt, obj$ncat, obj$cp.table)
+  out <- rcpp_Prune(tree$cpp.ptr,
+                    y, x, trt, tree$ncat, tree$cp.table)
 
-  obj$cpp.tree <- out$cpp.prune.tree
-  obj$frame <- FormatTree(obj)
-  obj$cp.table <- out$cp.table
-  obj
+  tree$cpp.tree <- out$cpp.prune.tree
+  tree$frame <- FormatTree(tree)
+  tree$cp.table <- out$cp.table
+  tree
 }
