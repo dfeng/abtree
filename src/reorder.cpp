@@ -29,7 +29,7 @@ void Reorder(int split_col, int ncol,
   for (int j=0; j < ncol; j++) {
     int leftpos = start;
     int rightpos = 0;
-    int tempvec[end - split_n];
+    int tempvec[end - split_n]; // WARNING
     // making sure we're not in the column that's already sorted
     if (j == split_col) continue;
     // data row i in column j

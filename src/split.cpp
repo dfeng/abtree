@@ -107,7 +107,7 @@ void Partition(Node *splitnode,
 
   // if things are categorical, then we have to manually move the selected category
   if (split_type > 0) { // categorical
-    int tempvec[end - start];
+    int tempvec[end - start]; // WARNING
     for (int i = 0; i < split_last - split_first; i++) {
       tempvec[i] = ordering(split_first + i, split_col);
     }
@@ -124,7 +124,7 @@ void Partition(Node *splitnode,
   }
 
   // construct a 'lookup' table to determine which rows are going left or right
-  bool which[y.size()];
+  bool which[y.size()]; // WARNING
   std::fill_n(which, y.size(), 0); // false
   for (int i = start; i < split_n; i++) {
     which[ordering(i, split_col)] = true;
@@ -169,7 +169,7 @@ double splitCriteria(Block &left, Block &right) {
   // double bss = sum(pow(left.total_p - left.p, 2)) + sum(pow(right.total_p - right.p, 2));
   double bss = left.ntot * pow(left.mean[1] - left.mean[0], 2) + right.ntot * pow(right.mean[1] - right.mean[0], 2);
   // double nf = 1.0 / left.n[0] + 1.0 / left.n[1] + 1.0 / right.n[0] + 1.0 / right.n[1];
-  double wss = left.var[0] + left.var[1] + right.var[0] + right.var[1];
+  double wss = left.ntot * (left.var[0] + left.var[1]) + right.ntot * (right.var[0] + right.var[1]);
   // double wss = sum(((NumericVector) left.n) * left.p * (1-left.p)) + sum(((NumericVector) right.n) * right.p * (1-right.p));
   // Rcpp::Rcout << "bss: " << bss << std::endl;
   // Rcpp::Rcout << "wss: " << wss << std::endl;

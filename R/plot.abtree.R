@@ -35,7 +35,7 @@ plot.abtree <- function (x, margin = 0, digits=3, scientific=FALSE, binaryY = FA
   lines(c(temp$x), c(temp$y))
   
   # write text
-  n_leaves <- sum(tree$split_Var == "<leaf>")
+  n_leaves <- sum(tree$split_var == "<leaf>")
   n_parents <- nrow(tree)-n_leaves
   label <- xvals <- yvals <- rep(NA, n_leaves+n_parents*3)
   pos <- rep(1L, n_leaves+n_parents*3)

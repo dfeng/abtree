@@ -57,7 +57,7 @@ void SetComplexity(Node *node, double &max_complexity, Node **max_node) {
     Rcout << "total_Q" << node->total_Q << std::endl;
     node->num_leaves = node->left->num_leaves + node->right->num_leaves;
     Rcout << "num_leaves" << node->num_leaves << std::endl;
-    complexity = (node->total_Q - node->blok.opt_Q)/(node->num_leaves - 1);
+    complexity = (node->total_Q - node->opt_Q)/(node->num_leaves - 1);
     Rcout << "complexity" << complexity << std::endl;
     assert(complexity >= 0); // with the new measure, not sure if this is true
     // if (complexity < 0) {
@@ -71,12 +71,12 @@ void SetComplexity(Node *node, double &max_complexity, Node **max_node) {
   // treat it as a leaf
   } else if (node->pruned) {
     node->num_leaves = 1;
-    node->total_Q = node->blok.opt_Q;
+    node->total_Q = node->opt_Q;
   // else, it's a leaf
   } else {
     // node->complexity = -1;
     node->num_leaves = 1;
-    node->total_Q = node->blok.opt_Q;
+    node->total_Q = node->opt_Q;
   }
 }
 

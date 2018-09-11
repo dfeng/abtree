@@ -13,19 +13,21 @@ using namespace Rcpp;
  */
 
 struct Block {
-  NumericVector y; // response / trt
-  NumericVector yy; // response^2 / trt
+  NumericVector mean; // mean / trt
+  NumericVector var; // var / trt
+  // NumericVector y; // response / trt
+  // NumericVector yy; // response^2 / trt
   IntegerVector n; // count / trt
 
   // inferred values
-  NumericVector mean; // average response / trt
-  NumericVector var; // variance / trt
+  // NumericVector mean; // average response / trt
+  // NumericVector var; // variance / trt
   int ntot;
-  double meantot;
+  // double meantot;
 
   // optimal
   int opt_trt;
-  double opt_Q;
+  // double opt_Q;
   double opt_mean;
 
   // Constructors

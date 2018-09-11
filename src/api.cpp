@@ -23,18 +23,18 @@ void ExportTree(Node *node, DoubleMat &tree_df) {
 int NodeToRow(Node *node, DoubleMat &tree_df, int id) {
   if (!node)
     return -1;
-  int ntrt = node->blok.y.size();
+  int ntrt = node->blok.n.size();
   DoubleVec node_row(10 + 2*ntrt);
   node_row[0] = id;
   node_row[1] = (double) node->split_col; // var
   node_row[2] = (double) node->split_tau; //tau
   node_row[3] = (double) node->blok.opt_trt; //opt_trt
-  node_row[4] = (double) node->total_Q;
+  node_row[4] = (double) node->opt_Q;
   node_row[5] = (double) node->complexity;
   node_row[6] = (double) node->branch;
   node_row[7] = (double) node->pruned;
   for (int i = 0; i < ntrt; i++) {
-    node_row[10+i] = (double) node->blok.y[i]; // y first, then n!
+    node_row[10+i] = (double) node->blok.mean[i]; // mean first, then n!
     node_row[10+ntrt+i] = (double) node->blok.n[i];
   }
   tree_df.push_back(node_row);

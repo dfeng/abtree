@@ -65,7 +65,7 @@ void FillComplexity(Node *node, NumericMatrix cp_table) {
       if (cp_table(i,0) >= node->complexity &&
           (cp_table(i,0) < node->branch || node->branch == -1.0)) {
         Block b = Block(node->prune_y, node->prune_y2, node->prune_n);
-        cp_table(i,1) += b.opt_Q;
+        // cp_table(i,1) += b.opt_Q;
       }
     }
   }
@@ -76,7 +76,7 @@ void FillComplexity(Node *node, NumericMatrix cp_table) {
     for (int i = 0; i < cp_table.nrow(); i++) {
       if (cp_table(i,0) < node->branch) {
         Block b = Block(node->prune_y, node->prune_y2, node->prune_n);
-        cp_table(i,1) += b.opt_Q;
+        // cp_table(i,1) += b.opt_Q;
       }
     }
   }
