@@ -170,6 +170,10 @@ double splitCriteria(Block &left, Block &right) {
   double bss = left.ntot * pow(left.mean[1] - left.mean[0], 2) + right.ntot * pow(right.mean[1] - right.mean[0], 2);
   // double nf = 1.0 / left.n[0] + 1.0 / left.n[1] + 1.0 / right.n[0] + 1.0 / right.n[1];
   double wss = left.ntot * (left.var[0] + left.var[1]) + right.ntot * (right.var[0] + right.var[1]);
+  // Rprintf("n: %d, %d, %d, %d | var: %0.2f, %0.2f, %0.2f, %0.2f\n", left.n[0], left.n[1], right.n[0],
+          // right.n[1], left.var[0], left.var[1], right.var[0], right.var[1]);
+  // double wss = left.n[0]*left.var[0] + left.n[1]*left.var[1] + 
+     // right.n[0] * right.var[0] + right.n[1]*right.var[1];
   // double wss = sum(((NumericVector) left.n) * left.p * (1-left.p)) + sum(((NumericVector) right.n) * right.p * (1-right.p));
   // Rcpp::Rcout << "bss: " << bss << std::endl;
   // Rcpp::Rcout << "wss: " << wss << std::endl;

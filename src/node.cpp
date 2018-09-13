@@ -19,9 +19,9 @@ Block::Block(NumericVector y0, NumericVector yy0, IntegerVector n0) {
   for (int i = 0; i < ntrt; i++) {
     // Rcpp::Rcout << "y" << y[i] << "n" << n[i] << std::endl;
     _mean[i] = y0[i] / n0[i];
-    _var[i] = yy0[i] / n0[i] - pow(_mean[i],2);
+    _var[i] = (yy0[i] - pow(_mean[i],2)* n0[i])/n0[i];
     // ytot += y[i];
-    ntot += n[i];
+    ntot += n0[i];
     if (_mean[i] > opt_mean) {
       opt_mean = _mean[i];
       opt_trt = i;
