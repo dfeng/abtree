@@ -16,13 +16,16 @@ void DeleteTree(Node *node) {
 // ========================  Tree -> DF  ========================  // 
 
 void ExportTree(Node *node, DoubleMat &tree_df) {
-  NodeToRow(node, tree_df, 1);
+  NodeToRow(node, tree_df, 0);
 }
 
-/* Converting a BST into an Array */
+/* Converting a BST into an Array
+ *  - id is the first empty slot (avaiable)
+ *  @return the new first empty slot
+ */
 int NodeToRow(Node *node, DoubleMat &tree_df, int id) {
-  if (!node)
-    return -1;
+  // if (!node)
+  //   return id+1;
   int ntrt = node->blok.n.size();
   DoubleVec node_row(10 + 2*ntrt);
   node_row[0] = id;
@@ -38,8 +41,12 @@ int NodeToRow(Node *node, DoubleMat &tree_df, int id) {
     node_row[10+ntrt+i] = (double) node->blok.n[i];
   }
   tree_df.push_back(node_row);
-  int rownum = tree_df.size();
-  tree_df[rownum-1][8] = (double) NodeToRow(node->left, tree_df, id*2);
-  tree_df[rownum-1][9] = (double) NodeToRow(node->right, tree_df, id*2+1);
-  return rownum;
+  // int rownum = tree_df.size();
+  if (!node->left)
+    return id+1;
+  int left_id = (double) NodeToRow(node->left, tree_df, id+1);
+  tree_df[id][8] = id+1;
+  int right_id = (double) NodeToRow(node->right, tree_df, left_id);
+  tree_df[id][9] = left_id;
+  return right_id;
 }

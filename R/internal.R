@@ -26,10 +26,10 @@ FormatTree <- function(obj) {
   tree <- as.data.frame(matrix(unlist(obj$cpp.tree), ncol=(10+ntrt*2), byrow=T))
   colnames(tree) <- c("id",
                       "split_var", "split_value","optimal_trt",
-                      "total_Q", "complexity", "branch", "pruned",
+                      "opt_Q", "complexity", "branch", "pruned",
                       "childleft_id", "childright_id",
                       paste(
-                        rep(c("y", "n"), each=ntrt),
+                        rep(c("mu", "n"), each=ntrt),
                         rep(LETTERS[1:ntrt], times=2),
                         sep="_")
                       )

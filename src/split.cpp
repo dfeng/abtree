@@ -153,7 +153,9 @@ void Partition(Node *splitnode,
   // NumericVector res(timer);
   // res = res / 1000000;
   // Rcpp::Rcout << "split: " << res << std::endl << std::endl;
-
+  
+  if (isinf(opt_Q)) return;
+  
   // now recurse!
   Partition(splitnode->left, y, x, trt, ordering, ntrt, ncat, ncol, start, split_n, min_bucket, min_split, max_depth, mtry, level+1);
   Partition(splitnode->right, y, x, trt, ordering, ntrt, ncat, ncol, split_n, end, min_bucket, min_split, max_depth, mtry, level+1);
