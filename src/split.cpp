@@ -1,6 +1,7 @@
 #include <Rcpp.h>
 #include <Rcpp/Benchmark/Timer.h>
 #include <float.h> // DBL_MAX
+#include <math.h> // floor
 
 #include "node.h"
 #include "abtree.h"
@@ -48,7 +49,8 @@ void Partition(Node *splitnode,
   // Rcpp::Rcout << col_order << std::endl;
   std::random_shuffle(col_order.begin(), col_order.end(), randWrapper);
   // Rcpp::Rcout << col_order << std::endl;
-
+  
+  double buffer = floor((end-start)*0.1);
   // looping over the columns
   for (int t = 0; t < mtry; t++) {
     int i = col_order(t);
@@ -60,7 +62,7 @@ void Partition(Node *splitnode,
     Block current_left, current_right;
     if (ncat[i] == 0) {
       current_Q = BestSplitNum(y, x(_,i), trt, ordering(_,i), ntrt,
-                        start, end, min_bucket, min_split,
+                        start+buffer, end-buffer, min_bucket, min_split,
                         current_left, current_right,
                         current_tau, current_split_n);
       if (current_Q == -DBL_MAX)
@@ -68,7 +70,7 @@ void Partition(Node *splitnode,
     } else { // ncat[i] > 0 <==> categorical
       current_Q = BestSplitCat(y, x(_,i), trt, ordering(_,i), ntrt, 
                         ncat[i],
-                        start, end, min_bucket, min_split,
+                        start+buffer, end-buffer, min_bucket, min_split,
                         current_left, current_right,
                         current_tau,
                         current_split_first, current_split_last);
