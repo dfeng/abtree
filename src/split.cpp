@@ -46,15 +46,14 @@ void Partition(Node *splitnode,
 
   // mtry bit (http://gallery.rcpp.org/articles/stl-random-shuffle/)
   IntegerVector col_order = seq_len(ncol) - 1;
-  // Rcpp::Rcout << col_order << std::endl;
+  // Rcout << col_order << std::endl;
   std::random_shuffle(col_order.begin(), col_order.end(), randWrapper);
-  // Rcpp::Rcout << col_order << std::endl;
+  // Rcout << col_order << std::endl;
   
-  double buffer = floor((end-start)*0.1);
   // looping over the columns
   for (int t = 0; t < mtry; t++) {
     int i = col_order(t);
-    // Rcpp::Rcout << i << t << std::endl;
+    // Rcout << i << t << std::endl;
     double current_tau;
     double current_Q;
     int current_split_n = -1;
@@ -62,7 +61,7 @@ void Partition(Node *splitnode,
     Block current_left, current_right;
     if (ncat[i] == 0) {
       current_Q = BestSplitNum(y, x(_,i), trt, ordering(_,i), ntrt,
-                        start+buffer, end-buffer, min_bucket, min_split,
+                        start, end, min_bucket, min_split,
                         current_left, current_right,
                         current_tau, current_split_n);
       if (current_Q == -DBL_MAX)
@@ -70,7 +69,7 @@ void Partition(Node *splitnode,
     } else { // ncat[i] > 0 <==> categorical
       current_Q = BestSplitCat(y, x(_,i), trt, ordering(_,i), ntrt, 
                         ncat[i],
-                        start+buffer, end-buffer, min_bucket, min_split,
+                        start, end, min_bucket, min_split,
                         current_left, current_right,
                         current_tau,
                         current_split_first, current_split_last);
@@ -133,7 +132,7 @@ void Partition(Node *splitnode,
   }
 
   Reorder(split_col, ncol, split_n, start, end, ordering, which);
-  // Rcpp::Rcout << "ordering" << std::endl << ordering << std::endl;
+  // Rcout << "ordering" << std::endl << ordering << std::endl;
 
   // populating current node
   splitnode->opt_Q = opt_Q;
@@ -154,7 +153,7 @@ void Partition(Node *splitnode,
 
   // NumericVector res(timer);
   // res = res / 1000000;
-  // Rcpp::Rcout << "split: " << res << std::endl << std::endl;
+  // Rcout << "split: " << res << std::endl << std::endl;
   
   if (isinf(opt_Q)) return;
   
@@ -167,8 +166,8 @@ int randWrapper(const int n) { return floor(unif_rand() * n); }
 
 double splitCriteria(Block &left, Block &right) {
   // [ (yAL - YBL)^2 + (yAR - YBR)^2 ] / [1/n + ...] / (v + ...)
-  // Rcpp::Rcout << "left " << left.mean[1] << left.var[1] << std::endl;
-  // Rcpp::Rcout << "left.p: " << left.p << std::endl;
+  // Rcout << "left " << left.mean[1] << left.var[1] << std::endl;
+  // Rcout << "left.p: " << left.p << std::endl;
   
   // double bss = sum(pow(left.total_p - left.p, 2)) + sum(pow(right.total_p - right.p, 2));
   double bss = left.ntot * pow(left.mean[1] - left.mean[0], 2) + right.ntot * pow(right.mean[1] - right.mean[0], 2);
@@ -179,9 +178,9 @@ double splitCriteria(Block &left, Block &right) {
   // double wss = left.n[0]*left.var[0] + left.n[1]*left.var[1] + 
      // right.n[0] * right.var[0] + right.n[1]*right.var[1];
   // double wss = sum(((NumericVector) left.n) * left.p * (1-left.p)) + sum(((NumericVector) right.n) * right.p * (1-right.p));
-  // Rcpp::Rcout << "bss: " << bss << std::endl;
-  // Rcpp::Rcout << "wss: " << wss << std::endl;
-  // Rcpp::Rcout << "nf: " << nf << std::endl;
+  // Rcout << "bss: " << bss << std::endl;
+  // Rcout << "wss: " << wss << std::endl;
+  // Rcout << "nf: " << nf << std::endl;
   return bss / wss;
 }
 
@@ -220,6 +219,7 @@ double BestSplitNum(NumericVector y, NumericMatrix::Column x,
     }
   }
 
+  
   // timer.step("sums");
 
   // start looping through the data
@@ -232,6 +232,9 @@ double BestSplitNum(NumericVector y, NumericMatrix::Column x,
     // data to consider a split
     if (x[ordering[i]] > prev_x) {
       bool flags_pass = true;
+      // alpha test
+      double alpha = n / (double) len;
+      if (alpha < 0.1 || alpha > 0.9) flags_pass = false;
       // bucket test
       for (int j = 0; j < ntrt; j++) {
         if ((ncum(n-1,j) < min_bucket) ||
@@ -245,11 +248,11 @@ double BestSplitNum(NumericVector y, NumericMatrix::Column x,
           (sum(ncum(len-1,_)-ncum(n-1,_))) < min_split) {
         flags_pass = false;
       }
-      
       if (flags_pass) {
         // now evaluate the split at prev_x
-        // Rcpp::Rcout << "ycum" << ycum << std::endl;
-        // Rcpp::Rcout << "y2cum" << y2cum << std::endl;
+        // Rcout << "ncum" << (IntegerVector) ncum(len-1,_) << std::endl;
+        // Rcout << "ycum" << (NumericVector) ycum(len-1,_) << std::endl;
+        // Rcout << "y2cum" << (NumericVector) y2cum(len-1,_) << std::endl;
         Block b_left((NumericVector) ycum(n-1,_),
                      (NumericVector) y2cum(n-1,_),
                      (IntegerVector) ncum(n-1,_));
@@ -257,9 +260,9 @@ double BestSplitNum(NumericVector y, NumericMatrix::Column x,
                       (NumericVector) y2cum(len-1,_)-y2cum(n-1,_),
                       (IntegerVector) ncum(len-1,_)-ncum(n-1,_));
 
-        // Rcpp::Rcout << "left" << b_left.mean[0] << b_left.mean[1] << std::endl;
+        // Rcout << "left" << b_left.mean[0] << b_left.mean[1] << std::endl;
         double Q = splitCriteria(b_left, b_right);
-        // Rcpp::Rcout << "Q: " << Q << std::endl;
+        // Rcout << "Q: " << Q << std::endl;
         if (Q > opt_Q) {
           opt_Q     = Q;
           opt_left  = b_left;
@@ -278,7 +281,7 @@ double BestSplitNum(NumericVector y, NumericMatrix::Column x,
 
   // NumericVector res(timer);
   // res = res / 1000000;
-  // Rcpp::Rcout << "num: " << res << std::endl;
+  // Rcout << "num: " << res << std::endl;
 
 
   // if we didn't make any splits (because no buckets), return false
@@ -321,8 +324,8 @@ double BestSplitCat(NumericVector y, NumericMatrix::Column x,
     ytot[trt[o]] += y[o];
     y2tot[trt[o]] += pow(y[o],2);
   }
-  // Rcpp::Rcout << "ncat " << ncat << std::endl;
-  // Rcpp::Rcout << "ycat " << ycat << std::endl;
+  // Rcout << "ncat " << ncat << std::endl;
+  // Rcout << "ycat " << ycat << std::endl;
 
   // timer.step("sums");
 
@@ -355,10 +358,10 @@ double BestSplitCat(NumericVector y, NumericMatrix::Column x,
                     (NumericVector) (y2tot - (NumericVector) y2cat(i,_)),
                     (IntegerVector) (ntot - (IntegerVector) ncat(i,_)));
 
-      // Rcpp::Rcout << "ly " << (NumericVector) ycat(i,_) << std::endl;
-      // Rcpp::Rcout << "ln " << (IntegerVector) ncat(i,_) << std::endl;
-      // Rcpp::Rcout << "ry " << (NumericVector) (ytot - (NumericVector) ycat(i,_)) << std::endl;
-      // Rcpp::Rcout << "rn " << (IntegerVector) (ntot - (IntegerVector) ncat(i,_)) << std::endl;
+      // Rcout << "ly " << (NumericVector) ycat(i,_) << std::endl;
+      // Rcout << "ln " << (IntegerVector) ncat(i,_) << std::endl;
+      // Rcout << "ry " << (NumericVector) (ytot - (NumericVector) ycat(i,_)) << std::endl;
+      // Rcout << "rn " << (IntegerVector) (ntot - (IntegerVector) ncat(i,_)) << std::endl;
 
       // Rprintf("cat:%d left: %0.2f right: %0.2f \n", i, b_left.opt_Q, b_right.opt_Q);
       double Q = splitCriteria(b_left, b_right);
@@ -378,7 +381,7 @@ double BestSplitCat(NumericVector y, NumericMatrix::Column x,
 
   // NumericVector res(timer);
   // res = res / 1000000;
-  // Rcpp::Rcout << "cat: " << res << std::endl;
+  // Rcout << "cat: " << res << std::endl;
 
   // if we didn't make any splits, return false
   // return (opt_Q != -DBL_MAX);
