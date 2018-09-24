@@ -40,6 +40,7 @@ Node::Node(int ntrt) {
   this->complexity = -1;
   this->split_col = -1;
   this->opt_Q = -1.0;
+  this->level = -1;
   // Block b;
   // Block t_b;
   // this->blok = b;

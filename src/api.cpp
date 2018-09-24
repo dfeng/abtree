@@ -35,7 +35,7 @@ int NodeToRow(Node *node, DoubleMat &tree_df, int id) {
   node_row[4] = (double) node->opt_Q;
   node_row[5] = (double) node->complexity;
   node_row[6] = (double) node->branch;
-  node_row[7] = (double) node->pruned;
+  node_row[7] = (double) node->level; // (before) pruned
   for (int i = 0; i < ntrt; i++) {
     node_row[10+i] = (double) node->blok.mean[i]; // mean first, then n!
     node_row[10+ntrt+i] = (double) node->blok.n[i];

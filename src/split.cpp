@@ -138,7 +138,7 @@ void Partition(Node *splitnode,
   splitnode->opt_Q = opt_Q;
   splitnode->split_tau = split_tau;
   splitnode->split_col = split_col;
-
+  splitnode->level = level;
   // splitnode->split_n = split_n;
 
   // initializing left, right branches

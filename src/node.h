@@ -52,7 +52,9 @@ struct Node {
   double complexity; // complexity value
   bool pruned; // whether or not this non-leaf node is a pruned beginning of branch
   double branch; // which branch this node is a part of (id'd by complexity)
-
+  
+  int level;
+  
   Block blok;
   Block test_blok;
 
