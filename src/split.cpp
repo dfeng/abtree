@@ -28,7 +28,7 @@ void Partition(Node *splitnode,
                int ntrt, const IntegerVector &ncat,
                int ncol, int start, int end,
                int min_bucket, int min_split, int max_depth,
-               int mtry,
+               int mtry, int split_cond,
                int level) {
   int split_col, split_n;
   int split_first, split_last; // first and last for categorical
@@ -63,7 +63,7 @@ void Partition(Node *splitnode,
       current_Q = BestSplitNum(y, x(_,i), trt, ordering(_,i), ntrt,
                         start, end, min_bucket, min_split,
                         current_left, current_right,
-                        current_tau, current_split_n);
+                        current_tau, current_split_n, split_cond);
       if (current_Q == -DBL_MAX)
         continue;
     } else { // ncat[i] > 0 <==> categorical
@@ -72,7 +72,7 @@ void Partition(Node *splitnode,
                         start, end, min_bucket, min_split,
                         current_left, current_right,
                         current_tau,
-                        current_split_first, current_split_last);
+                        current_split_first, current_split_last, split_cond);
       if (current_Q == -DBL_MAX)
         continue;
     }
@@ -158,28 +158,60 @@ void Partition(Node *splitnode,
   if (isinf(opt_Q)) return;
   
   // now recurse!
-  Partition(splitnode->left, y, x, trt, ordering, ntrt, ncat, ncol, start, split_n, min_bucket, min_split, max_depth, mtry, level+1);
-  Partition(splitnode->right, y, x, trt, ordering, ntrt, ncat, ncol, split_n, end, min_bucket, min_split, max_depth, mtry, level+1);
+  Partition(splitnode->left, y, x, trt, ordering, ntrt, ncat, ncol, start, split_n, min_bucket, min_split, max_depth, mtry, split_cond, level+1);
+  Partition(splitnode->right, y, x, trt, ordering, ntrt, ncat, ncol, split_n, end, min_bucket, min_split, max_depth, mtry, split_cond, level+1);
 }
 
 int randWrapper(const int n) { return floor(unif_rand() * n); }
 
-double splitCriteria(Block &left, Block &right) {
+double splitCriteria(Block &left, Block &right, int &split_cond) {
   // [ (yAL - YBL)^2 + (yAR - YBR)^2 ] / [1/n + ...] / (v + ...)
   // Rcout << "left " << left.mean[1] << left.var[1] << std::endl;
   // Rcout << "left.p: " << left.p << std::endl;
+  double bss;
+  double wss;
+  switch(split_cond) {
+  // 
+  case 1: {
+    bss = left.ntot * pow(left.mean[1] - left.mean[0], 2) + 
+          right.ntot * pow(right.mean[1] - right.mean[0], 2);
+    wss = left.ntot * (left.var[0] + left.var[1]) + 
+          right.ntot * (right.var[0] + right.var[1]);
+    break;
+  };
+  // 
+  case 2: {
+    bss = 1;
+    wss = left.ntot * (left.var[0] + left.var[1]) + 
+          right.ntot * (right.var[0] + right.var[1]);
+    break;
+  };
+  // proper F-test (all mean)
+  case 3: {
+    double all_mean = (left.n[0] * left.mean[0] + left.n[1] * left.mean[1] +
+                       right.n[0] * right.mean[0] + right.n[1] * right.mean[1]) /
+                      (left.n[0] + left.n[1] + right.n[0] + right.n[1]);
+    bss = left.n[0] * pow(left.mean[0] - all_mean, 2) + 
+          left.n[1] * pow(left.mean[1] - all_mean, 2) + 
+          right.n[0] * pow(right.mean[0] - all_mean, 2) + 
+          right.n[1] * pow(right.mean[1] - all_mean, 2);
+    wss = left.n[0] * left.var[0] + left.n[1] * left.var[1] +
+          right.n[0] * right.var[0] + right.n[1] * right.var[1];
+    break;
+  };
+  }
   
   // double bss = sum(pow(left.total_p - left.p, 2)) + sum(pow(right.total_p - right.p, 2));
-  double bss = left.ntot * pow(left.mean[1] - left.mean[0], 2) + right.ntot * pow(right.mean[1] - right.mean[0], 2);
+  
   // double nf = 1.0 / left.n[0] + 1.0 / left.n[1] + 1.0 / right.n[0] + 1.0 / right.n[1];
-  double wss = left.ntot * (left.var[0] + left.var[1]) + right.ntot * (right.var[0] + right.var[1]);
+  
   // Rprintf("n: %d, %d, %d, %d | var: %0.2f, %0.2f, %0.2f, %0.2f\n", left.n[0], left.n[1], right.n[0],
           // right.n[1], left.var[0], left.var[1], right.var[0], right.var[1]);
   // double wss = left.n[0]*left.var[0] + left.n[1]*left.var[1] + 
      // right.n[0] * right.var[0] + right.n[1]*right.var[1];
   // double wss = sum(((NumericVector) left.n) * left.p * (1-left.p)) + sum(((NumericVector) right.n) * right.p * (1-right.p));
-  // Rcout << "bss: " << bss << std::endl;
-  // Rcout << "wss: " << wss << std::endl;
+  Rcout << "bss: " << bss << std::endl;
+  Rcout << "wss: " << wss << std::endl;
   // Rcout << "nf: " << nf << std::endl;
   return bss / wss;
 }
@@ -189,7 +221,7 @@ double BestSplitNum(NumericVector y, NumericMatrix::Column x,
                   int ntrt, int start, int end,
                   int min_bucket, int min_split,
                   Block &opt_left, Block &opt_right,
-                  double &split_tau, int &split_n) {
+                  double &split_tau, int &split_n, int &split_cond) {
   const int len = end - start;
   // we will use ncum to keep track of counts of each treatment
   // and response for each treatment as we proceed through the data
@@ -261,7 +293,7 @@ double BestSplitNum(NumericVector y, NumericMatrix::Column x,
                       (IntegerVector) ncum(len-1,_)-ncum(n-1,_));
 
         // Rcout << "left" << b_left.mean[0] << b_left.mean[1] << std::endl;
-        double Q = splitCriteria(b_left, b_right);
+        double Q = splitCriteria(b_left, b_right, split_cond);
         // Rcout << "Q: " << Q << std::endl;
         if (Q > opt_Q) {
           opt_Q     = Q;
@@ -296,7 +328,7 @@ double BestSplitCat(NumericVector y, NumericMatrix::Column x,
                   int min_bucket, int min_split,
                   Block &opt_left, Block &opt_right,
                   double &split_tau,
-                  int &split_left, int &split_right) {
+                  int &split_left, int &split_right, int &split_cond) {
   // Rprintf("Start Categorical Best Split\n");
   // Rprintf("start/end %d %d\n", start, end);
   IntegerMatrix ncat(K,ntrt); // defaults to 0
@@ -364,7 +396,7 @@ double BestSplitCat(NumericVector y, NumericMatrix::Column x,
       // Rcout << "rn " << (IntegerVector) (ntot - (IntegerVector) ncat(i,_)) << std::endl;
 
       // Rprintf("cat:%d left: %0.2f right: %0.2f \n", i, b_left.opt_Q, b_right.opt_Q);
-      double Q = splitCriteria(b_left, b_right);
+      double Q = splitCriteria(b_left, b_right, split_cond);
       if (Q > opt_Q) {
         opt_Q = Q;
         opt_left = b_left;

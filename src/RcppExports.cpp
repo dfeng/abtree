@@ -6,8 +6,8 @@
 using namespace Rcpp;
 
 // rcpp_BuildTree
-List rcpp_BuildTree(NumericVector y, NumericMatrix x, IntegerVector trt, IntegerMatrix ordering, IntegerVector ncat, int ntrt, int min_bucket, int min_split, int max_depth, int mtry);
-RcppExport SEXP _abtree_rcpp_BuildTree(SEXP ySEXP, SEXP xSEXP, SEXP trtSEXP, SEXP orderingSEXP, SEXP ncatSEXP, SEXP ntrtSEXP, SEXP min_bucketSEXP, SEXP min_splitSEXP, SEXP max_depthSEXP, SEXP mtrySEXP) {
+List rcpp_BuildTree(NumericVector y, NumericMatrix x, IntegerVector trt, IntegerMatrix ordering, IntegerVector ncat, int ntrt, int min_bucket, int min_split, int max_depth, int mtry, int split_cond);
+RcppExport SEXP _abtree_rcpp_BuildTree(SEXP ySEXP, SEXP xSEXP, SEXP trtSEXP, SEXP orderingSEXP, SEXP ncatSEXP, SEXP ntrtSEXP, SEXP min_bucketSEXP, SEXP min_splitSEXP, SEXP max_depthSEXP, SEXP mtrySEXP, SEXP split_condSEXP) {
 BEGIN_RCPP
     Rcpp::RObject rcpp_result_gen;
     Rcpp::RNGScope rcpp_rngScope_gen;
@@ -21,7 +21,8 @@ BEGIN_RCPP
     Rcpp::traits::input_parameter< int >::type min_split(min_splitSEXP);
     Rcpp::traits::input_parameter< int >::type max_depth(max_depthSEXP);
     Rcpp::traits::input_parameter< int >::type mtry(mtrySEXP);
-    rcpp_result_gen = Rcpp::wrap(rcpp_BuildTree(y, x, trt, ordering, ncat, ntrt, min_bucket, min_split, max_depth, mtry));
+    Rcpp::traits::input_parameter< int >::type split_cond(split_condSEXP);
+    rcpp_result_gen = Rcpp::wrap(rcpp_BuildTree(y, x, trt, ordering, ncat, ntrt, min_bucket, min_split, max_depth, mtry, split_cond));
     return rcpp_result_gen;
 END_RCPP
 }
@@ -59,7 +60,7 @@ END_RCPP
 }
 
 static const R_CallMethodDef CallEntries[] = {
-    {"_abtree_rcpp_BuildTree", (DL_FUNC) &_abtree_rcpp_BuildTree, 10},
+    {"_abtree_rcpp_BuildTree", (DL_FUNC) &_abtree_rcpp_BuildTree, 11},
     {"_abtree_rcpp_Prune", (DL_FUNC) &_abtree_rcpp_Prune, 6},
     {"_abtree_rcpp_Predict", (DL_FUNC) &_abtree_rcpp_Predict, 6},
     {NULL, NULL, 0}

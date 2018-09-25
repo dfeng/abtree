@@ -9,6 +9,7 @@
 #' @param min.split the minimum number of observations to return to the user
 #' @param max.depth the maximum depth of each tree
 #' @param mtry the number of features to select at random to grow each tree
+#' @param split.cond the split condition we use
 #'
 #' @return tree: a data frame containing the nodes of the tree
 #'         treatments: a mapping of A and B to the treatments passed in 
@@ -55,7 +56,7 @@
 #' #    chance of improving their income after the program than those who did not 
 
 abtree <- function(formula, data, min.bucket=10, min.split=30,
-                     max.depth=5, mtry=NULL) {
+                     max.depth=5, mtry=NULL, split.cond=1) {
   m <- ParseFormula(formula, data)
   if(any(is.na(m$x))) {
     m$x <- na.omit(m$x)
@@ -89,7 +90,8 @@ abtree <- function(formula, data, min.bucket=10, min.split=30,
                         as.integer(min.bucket), # should these (as.integer)
                         as.integer(min.split),  # be here? or should they
                         as.integer(max.depth),  # be conditions?
-                        as.integer(mtry))
+                        as.integer(mtry),
+                        as.integer(split.cond))
 
   class(out)     <- "abtree"
   out$formula    <- formula

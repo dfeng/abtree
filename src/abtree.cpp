@@ -20,7 +20,7 @@ List rcpp_BuildTree(NumericVector y, NumericMatrix x,
                     IntegerVector trt, IntegerMatrix ordering,
                     IntegerVector ncat, int ntrt,
                     int min_bucket, int min_split, int max_depth,
-                    int mtry) {
+                    int mtry, int split_cond) {
 
   int ncol = x.ncol();
   int nrow = x.nrow();
@@ -46,7 +46,7 @@ List rcpp_BuildTree(NumericVector y, NumericMatrix x,
             ntrt, ncat,
             ncol, 0, nrow,
             min_bucket, min_split, max_depth,
-            mtry,
+            mtry, split_cond,
             0);
 
   // Rcout << "CP" << std::endl;

@@ -14,18 +14,18 @@ void Partition(Node *splitnode,
                int ntrt, const IntegerVector &ncat,
                int ncol, int start, int end,
                int min_bucket, int min_split, int max_depth,
-               int mtry,
+               int mtry, int split_cond,
                int level);
 
 int randWrapper(const int n);
-double splitCriteria(Block &left, Block &right);
+double splitCriteria(Block &left, Block &right, int &split_cond);
 
 double BestSplitNum(NumericVector y, NumericMatrix::Column x,
                   IntegerVector trt, IntegerMatrix::Column ordering,
                   int ntrt, int start, int end,
                   int min_bucket, int min_split,
                   Block &opt_left, Block &opt_right,
-                  double &split_tau, int &split_n);
+                  double &split_tau, int &split_n, int &split_cond);
 
 double BestSplitCat(NumericVector y, NumericMatrix::Column x,
                   IntegerVector trt, IntegerMatrix::Column ordering,
@@ -34,7 +34,7 @@ double BestSplitCat(NumericVector y, NumericMatrix::Column x,
                   int min_bucket, int min_split,
                   Block &opt_left, Block &opt_right,
                   double &split_tau,
-                  int &split_left, int &split_right);
+                  int &split_left, int &split_right, int &split_cond);
 
 // ========================  Reorder  ========================  // 
 

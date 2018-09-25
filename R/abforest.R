@@ -10,6 +10,7 @@
 #' @param max.depth the maximum depth of each tree
 #' @param n.tree the number of trees to grow
 #' @param mtry the number of features to select at random to grow each tree
+#' @param split.cond the split condition we use
 #'
 #' @return out: a list of trees
 #' 
@@ -38,7 +39,8 @@
 #' @export
 abforest <- function(formula, data, min.bucket=10, min.split=30,
                    max.depth=4, n.tree=100,
-                   mtry=floor(sqrt(length(all.vars(formula[[3]][[3]]))))) {
+                   mtry=floor(sqrt(length(all.vars(formula[[3]][[3]])))),
+                   split.cond=1) {
   # if (is.null(mtry)) mtry <- all.vars(formula[[3]][[3]])
   # getting the number of columns from formula+data
 
@@ -52,7 +54,7 @@ abforest <- function(formula, data, min.bucket=10, min.split=30,
     bagged.index <- sample(n, replace=TRUE)
     # oobers <- (1:n)[-bagged.index]
     tree <- abtree(formula, data[bagged.index,], min.bucket=min.bucket, min.split=min.split,
-                   max.depth=max.depth, mtry=mtry)
+                   max.depth=max.depth, mtry=mtry, split.cond=split.cond)
     # oob.pred <- predict(tree, data[oobers,])
     # for (i.oob in 1:length(oobers)) {
     #   oob <- oobers[i.oob]
