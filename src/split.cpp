@@ -210,8 +210,8 @@ double splitCriteria(Block &left, Block &right, int &split_cond) {
   // double wss = left.n[0]*left.var[0] + left.n[1]*left.var[1] + 
      // right.n[0] * right.var[0] + right.n[1]*right.var[1];
   // double wss = sum(((NumericVector) left.n) * left.p * (1-left.p)) + sum(((NumericVector) right.n) * right.p * (1-right.p));
-  Rcout << "bss: " << bss << std::endl;
-  Rcout << "wss: " << wss << std::endl;
+  // Rcout << "bss: " << bss << std::endl;
+  // Rcout << "wss: " << wss << std::endl;
   // Rcout << "nf: " << nf << std::endl;
   return bss / wss;
 }
