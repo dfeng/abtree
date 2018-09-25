@@ -50,5 +50,9 @@ FormatTree <- function(obj) {
       NA)
   })
   tree$split_var[is.na(tree$split_var)] <- "<leaf>"
+  
+  ## maybe add back later
+  tree$complexity <- NULL
+  tree$branch <- NULL
   tree
 }
