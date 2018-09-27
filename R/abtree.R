@@ -101,6 +101,7 @@ abtree <- function(formula, data, min.bucket=10, min.split=30,
   out$ncat       <- ncat
   out$y.name     <- m$y.name
   out$trt.name   <- m$trt.name
+  out$max.depth  <- max.depth
   out$frame      <- FormatTree(out)
   # if (length(out$cp.table) == 0) {
   #   out$cp.table <- NULL

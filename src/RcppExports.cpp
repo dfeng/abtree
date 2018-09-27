@@ -43,8 +43,8 @@ BEGIN_RCPP
 END_RCPP
 }
 // rcpp_Predict
-List rcpp_Predict(SEXP xptr, NumericVector test_y, NumericMatrix test_x, IntegerVector test_trt, IntegerVector ncat, int ntrt);
-RcppExport SEXP _abtree_rcpp_Predict(SEXP xptrSEXP, SEXP test_ySEXP, SEXP test_xSEXP, SEXP test_trtSEXP, SEXP ncatSEXP, SEXP ntrtSEXP) {
+List rcpp_Predict(SEXP xptr, NumericVector test_y, NumericMatrix test_x, IntegerVector test_trt, IntegerVector ncat, int ntrt, int pred_max_depth);
+RcppExport SEXP _abtree_rcpp_Predict(SEXP xptrSEXP, SEXP test_ySEXP, SEXP test_xSEXP, SEXP test_trtSEXP, SEXP ncatSEXP, SEXP ntrtSEXP, SEXP pred_max_depthSEXP) {
 BEGIN_RCPP
     Rcpp::RObject rcpp_result_gen;
     Rcpp::RNGScope rcpp_rngScope_gen;
@@ -54,7 +54,8 @@ BEGIN_RCPP
     Rcpp::traits::input_parameter< IntegerVector >::type test_trt(test_trtSEXP);
     Rcpp::traits::input_parameter< IntegerVector >::type ncat(ncatSEXP);
     Rcpp::traits::input_parameter< int >::type ntrt(ntrtSEXP);
-    rcpp_result_gen = Rcpp::wrap(rcpp_Predict(xptr, test_y, test_x, test_trt, ncat, ntrt));
+    Rcpp::traits::input_parameter< int >::type pred_max_depth(pred_max_depthSEXP);
+    rcpp_result_gen = Rcpp::wrap(rcpp_Predict(xptr, test_y, test_x, test_trt, ncat, ntrt, pred_max_depth));
     return rcpp_result_gen;
 END_RCPP
 }
@@ -62,7 +63,7 @@ END_RCPP
 static const R_CallMethodDef CallEntries[] = {
     {"_abtree_rcpp_BuildTree", (DL_FUNC) &_abtree_rcpp_BuildTree, 11},
     {"_abtree_rcpp_Prune", (DL_FUNC) &_abtree_rcpp_Prune, 6},
-    {"_abtree_rcpp_Predict", (DL_FUNC) &_abtree_rcpp_Predict, 6},
+    {"_abtree_rcpp_Predict", (DL_FUNC) &_abtree_rcpp_Predict, 7},
     {NULL, NULL, 0}
 };
 

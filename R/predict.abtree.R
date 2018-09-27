@@ -3,13 +3,15 @@
 #' @param object an object of class 'abtree' returned by MakeTree
 #' @param new.data a new data frame containing the variables used in MakeTree
 #' @param type the type of data to return
+#' @param pred.max.depth the max depth to predict to
 #' @param ... optional arguments
 #'
 #' @return a vector of predicted optimal treatments for all of the observations
 #' @export
 #'
-predict.abtree <- function(object, new.data, type="response", ...) {
+predict.abtree <- function(object, new.data, type="response", pred.max.depth=NULL, ...) {
   m <- ParseFormula(object$formula, new.data)
+  if (is.null(pred.max.depth)) pred.max.depth <- object$max.depth
   # TODO: Handling missing data, via surrogate splits
   if (any(is.na(m$x))) {
     is_missing <- apply(m$x, 1, function(x) any(is.na(x)))
@@ -23,7 +25,7 @@ predict.abtree <- function(object, new.data, type="response", ...) {
   trt <- as.integer(m$trt)-1L # correcting for 0-index
   ord <- apply(x, 2, order)-1L # correcting for 0-index
   out <- rcpp_Predict(object$cpp.ptr,
-                      y, x, trt, object$ncat, length(object$trt.levels))
+                      y, x, trt, object$ncat, length(object$trt.levels), pred.max.depth)
   if (type=="response") {
     preds <- rep(NA, nrow(m$x))
     if (exists("is_missing")) {
