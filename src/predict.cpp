@@ -28,23 +28,23 @@
 // xrow is a row of the X matrix, not a column
 Node * PredictNode(Node *node,
                    NumericMatrix::Row xrow,
-                   IntegerVector ncat) {
-  if (!node->left) {
+                   IntegerVector ncat, int pred_max_depth) {
+  if (!node->left || node->level >= pred_max_depth) {
     return node;
   } else {
     // if numeric
     if (ncat[node->split_col] == 0) {
       if (xrow[node->split_col] <= node->split_tau) {
-        return PredictNode(node->left, xrow, ncat);
+        return PredictNode(node->left, xrow, ncat, pred_max_depth);
       } else {
-        return PredictNode(node->right, xrow, ncat);
+        return PredictNode(node->right, xrow, ncat, pred_max_depth);
       }
     // if categorical
     } else {
       if (xrow[node->split_col] == node->split_tau) {
-        return PredictNode(node->left, xrow, ncat);
+        return PredictNode(node->left, xrow, ncat, pred_max_depth);
       } else {
-        return PredictNode(node->right, xrow, ncat);
+        return PredictNode(node->right, xrow, ncat, pred_max_depth);
       }
     }
   }

@@ -79,19 +79,21 @@ abforest <- function(formula, data, min.bucket=10, min.split=30,
 #' @param object an object of class 'abforest'
 #' @param new.data a new data frame containing the variables used in MakeTree
 #' @param type the type of data to return
+#' @param pred.max.depth the max depth to predict to
 #' @param ... optional arguments
 #'
 #' @return a vector of predicted optimal treatments for all of the observations
 #' @export
-predict.abforest <- function(object, new.data, type="response", ...) {
+predict.abforest <- function(object, new.data, type="response", pred.max.depth=NULL, ...) {
   n <- length(object$trees)
   m <- nrow(new.data)
   trt.levels <- object$trees[[1]]$trt.levels
+  if (is.null(pred.max.depth)) pred.max.depth <- object$trees[[1]]$max.depth
   # uplift-type score / predicted probabilities
   if (type=="pred.response" | type=="raw.response") {
     preds <- array(, dim=c(m,length(trt.levels),n))
     for (i in 1:n) {
-      preds[,,i] <- predict(object$trees[[i]], new.data, type="prob")
+      preds[,,i] <- predict.abtree(object$trees[[i]], new.data, type="prob", pred.max.depth=pred.max.depth)
     }
     if (type=="raw.response") {
       return(preds)
@@ -104,7 +106,7 @@ predict.abforest <- function(object, new.data, type="response", ...) {
   } else {
     preds <- matrix(, nrow=m, ncol=n)
     for (i in 1:n) {
-      preds[,i] <- predict.abtree(object$trees[[i]], new.data, type="response")
+      preds[,i] <- predict.abtree(object$trees[[i]], new.data, type="response", pred.max.depth=pred.max.depth)
     }
     if (type=="response") {
       return(apply(preds, 1, function(x) names(which.max(table(x)))))

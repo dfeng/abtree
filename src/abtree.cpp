@@ -108,7 +108,7 @@ List rcpp_Prune(SEXP xptr,
 // [[Rcpp::export]]
 List rcpp_Predict(SEXP xptr,
                   NumericVector test_y, NumericMatrix test_x,
-                  IntegerVector test_trt, IntegerVector ncat, int ntrt) {
+                  IntegerVector test_trt, IntegerVector ncat, int ntrt, int pred_max_depth) {
   XPtr<Node, PreserveStorage, DeleteTree> root(xptr); // recover root
   // IntegerVector pred_trt = Predict(root, test_y, test_x, test_trt, ncat, ntrt);
   int nrow = test_x.nrow();
@@ -116,7 +116,7 @@ List rcpp_Predict(SEXP xptr,
   NumericMatrix pred_prob(nrow, ntrt);
   // for each data point
   for (int i = 0; i < nrow; i++) {
-    Node *leaf = PredictNode(root, test_x(i,_), ncat);
+    Node *leaf = PredictNode(root, test_x(i,_), ncat, pred_max_depth);
     pred_prob(i,_) = leaf->blok.mean;
     // Rcout << "p: " << leaf->blok.p << std::endl;
     // Rcout << "n: " << leaf->blok.total_n << std::endl;

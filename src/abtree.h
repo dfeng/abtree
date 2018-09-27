@@ -74,7 +74,7 @@ int NodeToRow(Node *node, DoubleMat &tree_df, int id);
 //                       int ntrt);
 Node * PredictNode(Node *node,
                    NumericMatrix::Row xrow,
-                   IntegerVector ncat);
+                   IntegerVector ncat, int pred_max_depth);
 // void FillTest(Node *node);
 
 #endif
